@@ -24,6 +24,10 @@ async function seed() {
     },
   });
 
+  await prisma.provider.createMany({
+    data: [{ name: 'abc' }, { name: 'virta' }, { name: 'recharge' }, { name: 'office' }, { name: 'other' }]
+  })
+
   await prisma.note.create({
     data: {
       title: "My first note",
@@ -39,6 +43,16 @@ async function seed() {
       userId: user.id,
     },
   });
+
+  await prisma.chargeEvent.create({
+    data: {
+      kiloWattHours: 5.0,
+      provider: 'office',
+      date: '2022-10-11',
+      userId: user.id,
+      pricePerKiloWattHour: 0.0
+    }
+  })
 
   console.log(`Database has been seeded. 🌱`);
 }
