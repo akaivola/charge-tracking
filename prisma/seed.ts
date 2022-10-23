@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import fs from 'fs'
-import readline from 'readline/promises'
+import readline from 'readline'
 import { logger } from '../app/logger'
 
 const prisma = new PrismaClient({
@@ -93,11 +93,11 @@ async function seed() {
     i: 'ikea',
     o: 'other'
   }
-  await reader.on('line', async (row) => {
-    const [dateRaw, kiloWattHours, pricePerKiloWattHour, providerRaw] = row.split(',')
+  reader.on('line', async (row) => {
+    const [dateRaw, kiloWattHours, pricePerKiloWattHour, _, providerRaw] = row.split(',')
     logger.info(row)
     const [d, m, y] = dateRaw.split('.')
-    const provider = providersMap[providerRaw]
+    const provider = providersMap[providerRaw] || providerRaw
 
     if (!provider)
       throw Error(`Unable to map ${providerRaw} from ${providersMap}`)
@@ -112,9 +112,8 @@ async function seed() {
       },
     })
   })
-  reader.close()
 
-  console.log(`Database has been seeded. 🌱`)
+  logger.info(`Database has been seeded. 🌱`)
 }
 
 seed()
