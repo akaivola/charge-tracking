@@ -1,18 +1,10 @@
-import { redirect } from '@remix-run/server-runtime'
+import type { LoaderArgs } from '@remix-run/server-runtime';
+import { redirect } from '@remix-run/server-runtime';
+import { getUserId } from '~/session.server';
 
-import { useOptionalUser } from '~/utils'
-import ChargeTrackerIndexPage from './chargetracker'
-
-export default function Index() {
-  const user = useOptionalUser()
-  if (!user)
-    return redirect('/login')
-
-  return (
-    <main className="min-h-screen bg-white sm:flex sm:items-center sm:justify-center">
-      <div className="relative sm:pb-16 sm:pt-8">
-        {user && <ChargeTrackerIndexPage user={user} />}
-      </div>
-    </main>
-  )
+export async function loader({ request }: LoaderArgs) {
+  const userId = await getUserId(request)
+  if (userId) 
+    return redirect('/chargetracker')
+  else return redirect('/login')
 }

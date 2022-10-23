@@ -36,7 +36,7 @@ const providers = [
   'home',
   'other',
 ]
-const email = 'dev@charge.run'
+const email = 'dev@charge.run' // dev
 
 async function seed() {
   // cleanup the existing database
