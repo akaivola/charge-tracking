@@ -1,8 +1,29 @@
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import fs from 'fs'
+import readline from 'readline/promises'
+import { logger } from '../app/logger'
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient({
+  errorFormat: 'pretty',
+  log: [
+    { level: 'warn', emit: 'event' },
+    { level: 'info', emit: 'event' },
+    { level: 'error', emit: 'event' },
+  ],
+})
+
+prisma.$on('warn', (e) => {
+  logger.warn(e)
+})
+
+prisma.$on('info', (e) => {
+  logger.info(e)
+})
+
+prisma.$on('error', (e) => {
+  logger.error(e)
+})
 
 const providers = [
   'abc',
@@ -10,7 +31,6 @@ const providers = [
   'recharge',
   'office',
   'k-lataus',
-  ,
   'lidl',
   'ikea',
   'home',
@@ -37,6 +57,7 @@ async function seed() {
     },
   })
 
+  await prisma.provider.deleteMany()
   await prisma.provider.createMany({
     data: providers.map((p) => {
       return { name: p! }
@@ -59,21 +80,39 @@ async function seed() {
     },
   })
 
-  var stream = require('fs').createReadStream('FILE.CSV')
-  var reader = require('readline').createInterface({ input: stream })
-  var arr = []
-  reader.on('line', (row) => {
-    arr.push(row.split(','))
+  await prisma.chargeEvent.deleteMany()
+  var stream = fs.createReadStream('Charge Times - Log.csv')
+  var reader = readline.createInterface({ input: stream })
+  const providersMap: { [key: string]: string } = {
+    abc: 'abc',
+    v: 'virta',
+    r: 'recharge',
+    t: 'office',
+    k: 'k-lataus',
+    l: 'lidl',
+    i: 'ikea',
+    o: 'other'
+  }
+  await reader.on('line', async (row) => {
+    const [dateRaw, kiloWattHours, pricePerKiloWattHour, providerRaw] = row.split(',')
+    logger.info(row)
+    const [d, m, y] = dateRaw.split('.')
+    const provider = providersMap[providerRaw]
+
+    if (!provider)
+      throw Error(`Unable to map ${providerRaw} from ${providersMap}`)
+
+    await prisma.chargeEvent.create({
+      data: {
+        kiloWattHours: Number(kiloWattHours),
+        provider,
+        date: new Date(`${y}-${m}-${d}`),
+        userId: user.id,
+        pricePerKiloWattHour: Number(pricePerKiloWattHour),
+      },
+    })
   })
-  await prisma.chargeEvent.create({
-    data: {
-      kiloWattHours: 5.0,
-      provider: 'office',
-      date: new Date('2022-10-11'),
-      userId: user.id,
-      pricePerKiloWattHour: 0.0,
-    },
-  })
+  reader.close()
 
   console.log(`Database has been seeded. 🌱`)
 }
