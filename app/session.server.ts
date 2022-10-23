@@ -3,6 +3,7 @@ import invariant from 'tiny-invariant'
 
 import type { User } from '~/models/user.server'
 import { getUserById } from '~/models/user.server'
+import { isNumber } from 'lodash/fp'
 
 invariant(process.env.SESSION_SECRET, 'SESSION_SECRET must be set')
 
@@ -29,17 +30,23 @@ export async function getUserId(
 ): Promise<User['id'] | undefined> {
   const session = await getSession(request)
   const userId = session.get(USER_SESSION_KEY)
-  return userId
+  if (!isNumber(userId))
+    return undefined
+
+  return userId as unknown as bigint
 }
 
 export async function getUser(request: Request) {
   const userId = await getUserId(request)
   if (userId === undefined) return null
 
-  const user = await getUserById(userId)
-  if (user) return user
-
-  throw await logout(request)
+  try {
+    const user = await getUserById(userId)
+    if (user) return user
+  }
+  catch (error) {
+    throw await logout(request)
+  }
 }
 
 export async function requireUserId(
