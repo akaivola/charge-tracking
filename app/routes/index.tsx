@@ -1,9 +1,7 @@
-import { Link } from "@remix-run/react"
+import { Link } from '@remix-run/react'
 
-import { useOptionalUser } from "~/utils"
-import ChargeTrackerIndexPage from "./chargetracker"
-
-
+import { useOptionalUser } from '~/utils'
+import ChargeTrackerIndexPage from './chargetracker'
 
 export default function Index() {
   const user = useOptionalUser()
