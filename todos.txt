@@ -1,4 +1,9 @@
+* simple styling
+* add charge event
+* update charge event
+
+
+-- done
+* list charges
 * import existing Google Sheets data
   * map providers
-* list charges
-* add charge

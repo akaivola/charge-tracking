@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import fs from 'fs'
 import readline from 'readline'
-import { logger } from '../app/logger'
+import { logger } from '../app/logger.server'
 
 const prisma = new PrismaClient({
   errorFormat: 'pretty',

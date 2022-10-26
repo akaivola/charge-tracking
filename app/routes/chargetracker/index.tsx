@@ -1,37 +1,43 @@
 import { json } from '@remix-run/node'
-import type { LoaderArgs } from '@remix-run/node'
+import type { LoaderArgs , MetaFunction } from '@remix-run/node'
 import { useLoaderData } from '@remix-run/react'
 import { getChargeEvents } from '~/models/chargeevents.server'
-import type { User } from '~/models/user.server'
 import { requireUserId } from '~/session.server'
 
-async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderArgs) {
   const userId = await requireUserId(request)
-  const chargeEvents = await getChargeEvents({ userId })
+  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'numeric', day: 'numeric' }
+  const rawChargeEvents = await getChargeEvents({ userId })
+  const chargeEvents = rawChargeEvents.map(event => ({
+    ...event,
+    date: event.date.toLocaleDateString('fi-FI', options)
+  }))
   return json({ chargeEvents })
 }
 
-interface ChargeTrackerIndexPageProps {
-  user: User
+export const meta: MetaFunction = () => {
+  return {
+    title: 'Charge Tracking',
+  }
 }
 
-export default function ChargeTrackerIndexPage({
-  user,
-}: ChargeTrackerIndexPageProps) {
-  const { chargeEvents } = useLoaderData<typeof loader>()
+export default function ChargeTrackerIndexPage() {
+  const data = useLoaderData<typeof loader>()
+  const chargeEvents = data.chargeEvents
 
   return (
-    <div>
+    <table className='table-auto'>
       {chargeEvents.map(
         ({ date, kiloWattHours, pricePerKiloWattHour, provider }) => (
-          <div>
-            <div>{date}</div>
-            <div>{kiloWattHours}</div>
-            <div>{pricePerKiloWattHour}</div>
-            <div>{provider}</div>
-          </div>
+          <tr>
+            <td>{date}</td>
+            <td>{kiloWattHours}</td>
+            <td>{pricePerKiloWattHour}</td>
+            <td>{Math.round((Number(kiloWattHours) * Number(pricePerKiloWattHour)) * 100) / 100}</td>
+            <td>{provider}</td>
+          </tr>
         )
       )}
-    </div>
+    </table>
   )
 }

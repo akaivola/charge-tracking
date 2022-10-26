@@ -6,9 +6,11 @@ import * as React from 'react'
 import { verifyLogin } from '~/models/user.server'
 import { createUserSession, getUserId } from '~/session.server'
 import { safeRedirect, validateEmail } from '~/utils'
+import { logger } from '../logger.server'
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request)
+  logger.info(`user id ${userId}`)
   if (userId) return redirect('/')
   return json({})
 }
@@ -66,7 +68,7 @@ export const meta: MetaFunction = () => {
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams()
-  const redirectTo = searchParams.get('redirectTo') || '/notes'
+  const redirectTo = searchParams.get('redirectTo') || '/chargetracker'
   const actionData = useActionData<typeof action>()
   const emailRef = React.useRef<HTMLInputElement>(null)
   const passwordRef = React.useRef<HTMLInputElement>(null)

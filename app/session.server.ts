@@ -4,8 +4,14 @@ import invariant from 'tiny-invariant'
 import type { User } from '~/models/user.server'
 import { getUserById } from '~/models/user.server'
 import { isNumber } from 'lodash/fp'
+import { logger } from './logger.server'
+import _ from 'lodash'
 
 invariant(process.env.SESSION_SECRET, 'SESSION_SECRET must be set')
+
+  ; (BigInt.prototype as any).toJSON = function () {
+    return Number(this)
+  }
 
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
@@ -29,11 +35,11 @@ export async function getUserId(
   request: Request
 ): Promise<User['id'] | undefined> {
   const session = await getSession(request)
-  const userId = session.get(USER_SESSION_KEY)
-  if (!isNumber(userId))
+  const userId = Number(session.get(USER_SESSION_KEY))
+  if (_.isNaN(userId))
     return undefined
 
-  return userId as unknown as bigint
+  return userId as unknown as User['id']
 }
 
 export async function getUser(request: Request) {
@@ -56,7 +62,7 @@ export async function requireUserId(
   const userId = await getUserId(request)
   if (!userId) {
     const searchParams = new URLSearchParams([['redirectTo', redirectTo]])
-    throw redirect(`/login?${searchParams}`)
+    throw redirect(`/ login ? ${searchParams}`)
   }
   return userId
 }
@@ -82,7 +88,7 @@ export async function createUserSession({
   redirectTo: string
 }) {
   const session = await getSession(request)
-  session.set(USER_SESSION_KEY, userId)
+  session.set(USER_SESSION_KEY, userId.toString())
   return redirect(redirectTo, {
     headers: {
       'Set-Cookie': await sessionStorage.commitSession(session, {
