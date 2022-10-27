@@ -9,10 +9,6 @@ import _ from 'lodash'
 
 invariant(process.env.SESSION_SECRET, 'SESSION_SECRET must be set')
 
-  ; (BigInt.prototype as any).toJSON = function () {
-    return Number(this)
-  }
-
 export const sessionStorage = createCookieSessionStorage({
   cookie: {
     name: '__session',
