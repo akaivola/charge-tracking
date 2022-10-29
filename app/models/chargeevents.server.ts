@@ -12,7 +12,7 @@ export function getChargeEvents({ userId }: { userId: User['id'] }) {
       id: true,
       date: true,
       kiloWattHours: true,
-      pricePerKiloWattHour: true,
+      pricePerCharge: true,
       provider: true,
     },
     orderBy: { date: 'desc' },

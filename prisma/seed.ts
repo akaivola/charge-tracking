@@ -94,7 +94,7 @@ async function seed() {
     o: 'other'
   }
   reader.on('line', async (row) => {
-    const [dateRaw, kiloWattHours, pricePerKiloWattHour, _, providerRaw] = row.split(',')
+    const [dateRaw, kiloWattHours, pricePerCharge, _, providerRaw] = row.split(',')
     logger.info(row)
     const [d, m, y] = dateRaw.split('.')
     const provider = providersMap[providerRaw] || providerRaw
@@ -108,7 +108,7 @@ async function seed() {
         provider,
         date: new Date(`${y}-${m}-${d}`),
         userId: user.id,
-        pricePerKiloWattHour: Number(pricePerKiloWattHour),
+        pricePerCharge: Number(pricePerCharge),
       },
     })
   })

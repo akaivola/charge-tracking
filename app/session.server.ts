@@ -32,7 +32,7 @@ export async function getUserId(
 ): Promise<User['id'] | undefined> {
   const session = await getSession(request)
   const userId = Number(session.get(USER_SESSION_KEY))
-  if (_.isNaN(userId))
+  if (_.isNaN(userId) || ! await getUserById(BigInt(userId)))
     return undefined
 
   return userId as unknown as User['id']
@@ -58,7 +58,7 @@ export async function requireUserId(
   const userId = await getUserId(request)
   if (!userId) {
     const searchParams = new URLSearchParams([['redirectTo', redirectTo]])
-    throw redirect(`/ login ? ${searchParams}`)
+    throw redirect(`/login?${searchParams}`)
   }
   return userId
 }

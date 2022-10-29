@@ -47,8 +47,8 @@ model ChargeEvent {
   date          DateTime @default(now()) @db.Date
   kiloWattHours Decimal  @default(0.00) @db.Decimal(6, 2)
 
-  pricePerKiloWattHour Decimal @default(0.00) @db.Decimal(6, 2)
-  provider             String
+  pricePerCharge Decimal @default(0.00) @db.Decimal(6, 2)
+  provider       String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
