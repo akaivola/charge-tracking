@@ -1,16 +1,17 @@
-import { json } from '@remix-run/node'
-import type { LoaderArgs , MetaFunction , ActionArgs} from '@remix-run/node'
-import { Form, useActionData, useLoaderData, useTransition } from '@remix-run/react'
-import { getChargeEvents, upsertChargeEvent } from '~/models/chargeevents.server'
-import { requireUserId } from '~/session.server'
-import _ from 'lodash'
-import { logger } from '../../logger.server'
+import type { ActionArgs, LoaderArgs, MetaFunction } from '@remix-run/node';
+import { json } from '@remix-run/node';
+import { Form, useFetcher, useLoaderData } from '@remix-run/react';
+import _ from 'lodash';
+import type { FormEvent } from 'react';
+import React from 'react';
+import { getChargeEvents } from '~/models/chargeevents.server';
+import { requireUserId } from '~/session.server';
+import { logger } from '../../logger.server';
 
 const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'numeric', day: 'numeric' }
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await requireUserId(request)
-  logger.info(userId)
   const rawChargeEvents = await getChargeEvents({ userId })
   const chargeEvents = rawChargeEvents.map(event => ({
     ...event,
@@ -25,6 +26,10 @@ export async function loader({ request }: LoaderArgs) {
 export async function action({request}: ActionArgs) {
   const formData = await request.formData()
   const { _action, ...values } = Object.fromEntries(formData)
+
+  logger.info(`action: ${_action} ${JSON.stringify(values)}`)
+
+  return null
   // upsertChargeEvent({
 
   // })
@@ -37,29 +42,41 @@ export const meta: MetaFunction = () => {
 }
 
 export default function ChargeTrackerIndexPage() {
-  const data = useLoaderData<typeof loader>()
-  const chargeEvents = data.chargeEvents
+  const loaderData = useLoaderData<typeof loader>()
+  const chargeEvents = loaderData.chargeEvents
 
-  const actionData = useActionData()
-  const transition = useTransition()
+  const { state, type, submission, data, submit, load } = useFetcher()
+  console.log(state, type, submission, data)
 
   const NewChargeEntry: React.FC<{}> = (props: {}) => {
+    const formSubmit = (e: FormEvent<HTMLFormElement>) => { 
+      e.preventDefault()
+      console.log(e.target)
+      submit(new FormData(e.currentTarget), { method: 'post' })
+    }
     const currentDate = new Date().toLocaleDateString('fi-FI', options)
     return (
-      <Form method='post' name='new'>
+      <Form id='new' method='post'>
+        <div className='grid grid-cols-4'>
+          <div className='justify-self-center'>Date</div>
+          <div className='justify-self-center'>kWh</div>
+          <div className='justify-self-end'>e / charge</div>
+          <div>provider</div>
+        </div>
         <div className='grid grid-cols-4'>
             <div>
               <input type='text' className='bg-black' form='new' name='date' size={10} defaultValue={currentDate}/>
             </div>
-            <div>
+            <div className='justify-self-center'>
               <input type='text' className='bg-black' form='new' name='kiloWattHours' size={6} defaultValue={0}/>
             </div>
-            <div>
+            <div className='justify-self-center'>
               <input type='text' className='bg-black' form='new' name='pricePerCharge' size={4} defaultValue={0}/>
             </div>
-            <div>
-              <input type='text' className='bg-black' form='new' name='provider' size={4} defaultValue={'t'}/>
+            <div className='justify-self-center'>
+              <input type='text' className='bg-black' form='new' name='provider' size={8} defaultValue={'office'}/>
             </div>
+            <button type='submit' className='text-xl col-span-4 justify-self-center font-bold rounded-lg p-2 m-2 w-1/2 ring-1 ring-inset ring-slate-50' value='insert'>insert</button>
         </div>
       </Form>
     )
@@ -74,7 +91,8 @@ export default function ChargeTrackerIndexPage() {
   }, {kWh: 0, price: 0, count: 0})
 
   return (
-    <div className='container mx-auto p-8'>
+    <div className='container mx-auto p-4'>
+      <NewChargeEntry />
       <div className='grid grid-cols-3 my-2 text-lg font-bold'>
         <div>
           {total.count} charges
@@ -86,32 +104,41 @@ export default function ChargeTrackerIndexPage() {
           {total.price ?? 0}e
         </div>
       </div>
-      <NewChargeEntry />
       <>
-        {chargeEvents.map(({id}) => <Form method='post' name={id} />)}
+        { chargeEvents.map(({id}) => <Form key={`form-${id}`} method='post' id={id} />)}
       </>
       <table className='table-auto border-collapse cursor-pointer touch-pinch-zoom container mx-auto box-content'>
         <thead>
-          <th>Date</th>
-          <th>kWh</th>
-          <th>e / charge</th>
-          <th>e * kWh</th>
-          <th>Provider</th>
+          <tr>
+            <th>Date</th>
+            <th>kWh</th>
+            <th>e / charge</th>
+            <th>e * kWh</th>
+            <th>Provider</th>
+          </tr>
         </thead>
         <tbody>
-        {chargeEvents.map(
+        { chargeEvents.map(
           ({ id, date, kiloWattHours, pricePerCharge, provider }) => {
             return (
-            // multiple forms problem and place to put form. Can use form attribute and forms outside table
-            <tr>
-              <td className='py-1 pr-2'><input type='text' className='bg-black' name='date' size={10} form={id} defaultValue={date} /></td>
-              <td className='text-right px-2'><input type='text' className='bg-black' name='kiloWattHours' size={6} form={id} defaultValue={kiloWattHours} /></td>
-              <td className='text-right px-2'><input type='text' className='bg-black' name='pricePerCharge' size={4} form={id} defaultValue={pricePerCharge} /></td> 
-              <td className='text-right px-2'>{_.round(pricePerCharge / kiloWattHours, 2)}</td> 
-              <td className='pl-2'><input type='text' className='bg-black' name='provider' size={8} maxLength={20} form={id} defaultValue={provider} /></td>
-            </tr>
-          )}
-        )}
+              <tr key={`tr-${id}`}>
+                <td className='py-1 pr-2'>
+                  <input type='text' className='bg-black' name='date' size={10} form={id} defaultValue={date} />
+                </td>
+                <td className='text-right px-2'>
+                  <input type='text' className='bg-black' name='kiloWattHours' size={6} form={id} defaultValue={kiloWattHours} />
+                </td>
+                <td className='text-right px-2'>
+                  <input type='text' className='bg-black' name='pricePerCharge' size={4} form={id} defaultValue={pricePerCharge} />
+                </td> 
+                <td className='text-right px-2'>
+                  {_.round(pricePerCharge / kiloWattHours, 2)}
+                </td> 
+                <td className='pl-2'>
+                  <input type='text' className='bg-black' name='provider' size={8} maxLength={20} form={id} defaultValue={provider} />
+                </td>
+              </tr>
+            )})}
         </tbody>
       </table>
   </div>
