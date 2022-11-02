@@ -2,7 +2,8 @@ import type { ActionArgs, LoaderArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { Form, useFetcher, useLoaderData } from '@remix-run/react';
 import _ from 'lodash';
-import type { FormEvent } from 'react';
+import type { FormEvent, SyntheticEvent} from 'react';
+import { useState } from 'react';
 import React from 'react';
 import { getChargeEvents } from '~/models/chargeevents.server';
 import { requireUserId } from '~/session.server';
@@ -41,6 +42,12 @@ export const meta: MetaFunction = () => {
   }
 }
 
+function AdjustButton(value: string, onClick: (event: SyntheticEvent) => void) {
+  return (
+    <input type='button' onClick={onClick} className='btn btn-sm btn-primary rounded p-1 m-1' value={value} />
+  )
+}
+
 export default function ChargeTrackerIndexPage() {
   const loaderData = useLoaderData<typeof loader>()
   const chargeEvents = loaderData.chargeEvents
@@ -49,12 +56,14 @@ export default function ChargeTrackerIndexPage() {
   console.log(state, type, submission, data)
 
   const NewChargeEntry: React.FC<{}> = (props: {}) => {
+    const currentDate = new Date().toLocaleDateString('fi-FI', options)
     const formSubmit = (e: FormEvent<HTMLFormElement>) => { 
       e.preventDefault()
       console.log(e.target)
       submit(new FormData(e.currentTarget), { method: 'post' })
     }
-    const currentDate = new Date().toLocaleDateString('fi-FI', options)
+
+    const [kiloWattHours, setKiloWattHours] = useState(0)
     return (
       <Form id='new' method='post'>
         <div className='grid grid-cols-4'>
@@ -64,19 +73,41 @@ export default function ChargeTrackerIndexPage() {
           <div>provider</div>
         </div>
         <div className='grid grid-cols-4'>
-            <div>
-              <input type='text' className='bg-black' form='new' name='date' size={10} defaultValue={currentDate}/>
+          <div className='justify-self-center grid'>
+            <div className='grid grid-cols-1 w-1/2'>
+              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='-1' />
             </div>
-            <div className='justify-self-center'>
-              <input type='text' className='bg-black' form='new' name='kiloWattHours' size={6} defaultValue={0}/>
+            <input type='text' className='bg-black' form='new' name='date' size={10} defaultValue={currentDate}/>
+            <div className='grid grid-cols-1 w-1/2'>
+              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='+1' />
             </div>
-            <div className='justify-self-center'>
-              <input type='text' className='bg-black' form='new' name='pricePerCharge' size={4} defaultValue={0}/>
+          </div>
+          <div className='justify-self-center grid'>
+            <div className='grid grid-cols-2'>
+              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='-1' />
+              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='-0.1' />
             </div>
-            <div className='justify-self-center'>
-              <input type='text' className='bg-black' form='new' name='provider' size={8} defaultValue={'office'}/>
+            <input type='text' className='bg-black justify-self-center text-center' form='new' name='kiloWattHours' size={6} defaultValue={0}/>
+            <div className='grid grid-cols-2'>
+              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='+1' />
+              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='+0.1' />
             </div>
-            <button type='submit' className='text-xl col-span-4 justify-self-center font-bold rounded-lg p-2 m-2 w-1/2 ring-1 ring-inset ring-slate-50' value='insert'>insert</button>
+          </div>
+          <div className='justify-self-center grid'>
+            <div className='grid grid-cols-2'>
+              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='-1' />
+              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='-0.1' />
+            </div>
+            <input type='text' className='bg-black justify-self-center text-center' form='new' name='pricePerCharge' size={6} defaultValue={0}/>
+            <div className='grid grid-cols-2'>
+              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='+1' />
+              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='+0.1' />
+            </div>
+          </div>
+          <div className='grid'>
+            <input type='text' className='bg-black place-content-center text-center' form='new' name='provider' size={8} defaultValue={'office'}/>
+          </div>
+          <button type='submit' className='my-8 col-span-4 justify-self-center btn btn-primary rounded' value='insert'>insert</button>
         </div>
       </Form>
     )
