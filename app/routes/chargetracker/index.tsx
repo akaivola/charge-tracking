@@ -42,9 +42,18 @@ export const meta: MetaFunction = () => {
   }
 }
 
-function AdjustButton(value: string, onClick: (event: SyntheticEvent) => void) {
+function AdjustButton(props: { value: number, getter: number, setter: (newValue: number) => unknown}) {
+  const onClick = (_e: SyntheticEvent) => props.setter(Math.max(0, _.round(props.getter + props.value, 2)))
   return (
-    <input type='button' onClick={onClick} className='btn btn-sm btn-primary rounded p-1 m-1' value={value} />
+    <input type='button' onClick={onClick} className='btn btn-sm btn-primary rounded p-1 m-1' value={props.value} />
+  )
+}
+function DateAdjustButton(props: { value: number, getter: Date, setter: (newValue: Date) => unknown}) {
+  const oldDate = props.getter
+  const newDate = new Date(oldDate.getFullYear(), oldDate.getMonth(), oldDate.getDate() + props.value)
+  const onClick = (_e: SyntheticEvent) => props.setter(newDate)
+  return (
+    <input type='button' onClick={onClick} className='btn btn-sm btn-primary rounded p-1 m-1' value={props.value} />
   )
 }
 
@@ -63,7 +72,10 @@ export default function ChargeTrackerIndexPage() {
       submit(new FormData(e.currentTarget), { method: 'post' })
     }
 
+    const [date, setDate] = useState(new Date())
     const [kiloWattHours, setKiloWattHours] = useState(0)
+    const [price, setPrice] = useState(0)
+
     return (
       <Form id='new' method='post'>
         <div className='grid grid-cols-4'>
@@ -75,33 +87,33 @@ export default function ChargeTrackerIndexPage() {
         <div className='grid grid-cols-4'>
           <div className='justify-self-center grid'>
             <div className='grid grid-cols-1 w-1/2'>
-              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='-1' />
+              <DateAdjustButton value={-1} getter={date} setter={setDate} />
             </div>
-            <input type='text' className='bg-black' form='new' name='date' size={10} defaultValue={currentDate}/>
+            <input type='text' className='bg-black' form='new' name='date' size={10} value={date.toLocaleDateString('fi-FI', options)}/>
             <div className='grid grid-cols-1 w-1/2'>
-              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='+1' />
+              <DateAdjustButton value={1} getter={date} setter={setDate} />
             </div>
           </div>
           <div className='justify-self-center grid'>
             <div className='grid grid-cols-2'>
-              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='-1' />
-              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='-0.1' />
+              <AdjustButton value={-1} getter={kiloWattHours} setter={setKiloWattHours} />
+              <AdjustButton value={-0.1} getter={kiloWattHours} setter={setKiloWattHours} />
             </div>
-            <input type='text' className='bg-black justify-self-center text-center' form='new' name='kiloWattHours' size={6} defaultValue={0}/>
+            <input type='text' className='bg-black justify-self-center text-center' form='new' name='kiloWattHours' size={6} value={kiloWattHours}/>
             <div className='grid grid-cols-2'>
-              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='+1' />
-              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='+0.1' />
+              <AdjustButton value={1} getter={kiloWattHours} setter={setKiloWattHours} />
+              <AdjustButton value={0.1} getter={kiloWattHours} setter={setKiloWattHours} />
             </div>
           </div>
           <div className='justify-self-center grid'>
             <div className='grid grid-cols-2'>
-              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='-1' />
-              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='-0.1' />
+              <AdjustButton value={-1} getter={price} setter={setPrice} />
+              <AdjustButton value={-0.1} getter={price} setter={setPrice} />
             </div>
-            <input type='text' className='bg-black justify-self-center text-center' form='new' name='pricePerCharge' size={6} defaultValue={0}/>
+            <input type='text' className='bg-black justify-self-center text-center' form='new' name='pricePerCharge' size={6} value={price}/>
             <div className='grid grid-cols-2'>
-              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='+1' />
-              <input type='button' className='btn btn-sm btn-primary rounded p-1 m-1' value='+0.1' />
+              <AdjustButton value={1} getter={price} setter={setPrice} />
+              <AdjustButton value={0.1} getter={price} setter={setPrice} />
             </div>
           </div>
           <div className='grid'>
