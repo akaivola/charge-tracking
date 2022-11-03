@@ -1,5 +1,6 @@
-import type { User, ChargeEvent } from '@prisma/client'
+import type { ChargeEvent, User } from '@prisma/client'
 import _ from 'lodash'
+import invariant from 'tiny-invariant'
 
 import { prisma } from '~/db.server'
 
@@ -19,10 +20,18 @@ export function getChargeEvents({ userId }: { userId: User['id'] }) {
   })
 }
 
-export function upsertChargeEvent(chargeEvent: ChargeEvent) {
+export function createChargeEvent(chargeEvent: Omit<ChargeEvent, 'id' | 'createdAt' | 'updatedAt'>) {
+  return prisma.chargeEvent.create({
+    data: chargeEvent
+  })
+}
+
+export function upsertChargeEvent(chargeEvent: Omit<ChargeEvent, 'id' | 'createdAt' | 'updatedAt'> & { id?: bigint }) {
+  // updatedAt could be used as an optimistic lock
+  invariant(chargeEvent.userId, 'userId cannot be missing')
   return prisma.chargeEvent.upsert({
     where: { id: chargeEvent.id },
-    update: chargeEvent,
-    create: chargeEvent,
+    update: { ..._.omit(chargeEvent, 'createdAt'), updatedAt: new Date() },
+    create: _.omit(chargeEvent, 'createdAt', 'updatedAt', 'id')
   })
 }
