@@ -2,16 +2,24 @@ import { Prisma } from '@prisma/client';
 import type { ActionArgs, LoaderArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { Form, useFetcher, useLoaderData } from '@remix-run/react';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import utc from 'dayjs/plugin/utc'
 import _ from 'lodash';
 import type { SyntheticEvent } from 'react';
 import { useState } from 'react';
-import { createChargeEvent, getChargeEvents, upsertChargeEvent } from '~/models/chargeevents.server';
+import { createChargeEvent, getChargeEvents } from '~/models/chargeevents.server';
 import { requireUserId } from '~/session.server';
 import { logger } from '../../logger.server';
-import type { Provider, Provider } from '../../models/providers.server';
+import type { Provider } from '../../models/providers.server';
 import { getProviderCounts } from '../../models/providers.server';
 
-const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'numeric', day: 'numeric' }
+dayjs.extend(customParseFormat)
+dayjs.extend(utc)
+
+function format(date: Date) {
+  return dayjs.utc(date).format('DD.MM.YYYY')
+}
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await requireUserId(request)
@@ -19,7 +27,7 @@ export async function loader({ request }: LoaderArgs) {
   const chargeEvents = rawChargeEvents.map(event => ({
     ...event,
     id: event.id,
-    date: event.date.toLocaleDateString('fi-FI', options),
+    date: format(event.date),
     kiloWattHours: event.kiloWattHours.toNumber(),
     pricePerCharge: event.pricePerCharge.toNumber(),
   }))
@@ -36,10 +44,13 @@ export async function action({request}: ActionArgs) {
 
   if ('new' === _action) {
     const { date, kiloWattHours, pricePerCharge, provider } = values
-    const [day, month, year] = date.toString().split('.')
+
+    const parsedDate = dayjs.utc(date.toString(), 'DD.MM.YYYY').toDate()
+    logger.info(`parsedDate ${date} ${parsedDate}`)
+
     const result = await createChargeEvent({
       userId,
-      date: new Date(Date.parse(`${year}-${month}-${day}T00:00:00Z`)),
+      date: parsedDate,
       kiloWattHours: new Prisma.Decimal(kiloWattHours.toString()), 
       pricePerCharge: new Prisma.Decimal(pricePerCharge.toString()),
       provider: provider.toString()
@@ -92,7 +103,7 @@ function NewChargeEntry(props: NewChargeEntryProps) {
           <div className='grid grid-cols-1 w-1/2'>
             <DateAdjustButton value={-1} getter={date} setter={setDate} />
           </div>
-          <input type='text' className='bg-black' form='new' name='date' size={10} defaultValue={date.toLocaleDateString('fi-FI', options)}/>
+          <input type='text' className='bg-black' form='new' name='date' size={10} value={format(date)}/>
           <div className='grid grid-cols-1 w-1/2'>
             <DateAdjustButton value={1} getter={date} setter={setDate} />
           </div>
@@ -103,7 +114,7 @@ function NewChargeEntry(props: NewChargeEntryProps) {
             <AdjustButton value={-0.1} getter={kiloWattHours} setter={setKiloWattHours} />
           </div>
           <span className='grid grid-cols-2 items-center'>
-            <input type='text' className='bg-black justify-self-center text-center' form='new' name='kiloWattHours' size={6} defaultValue={kiloWattHours}/>{' '}kWh
+            <input type='text' className='bg-black justify-self-center text-center' form='new' name='kiloWattHours' size={6} value={kiloWattHours}/>{' '}kWh
           </span>
           <div className='grid grid-cols-2'>
             <AdjustButton value={1} getter={kiloWattHours} setter={setKiloWattHours} />
@@ -116,7 +127,7 @@ function NewChargeEntry(props: NewChargeEntryProps) {
             <AdjustButton value={-0.1} getter={price} setter={setPrice} />
           </div>
           <span className='grid grid-cols-2 items-center'>
-            <input type='text' className='bg-black justify-self-center text-center' form='new' name='pricePerCharge' size={6} defaultValue={price}/>{' '}e
+            <input type='text' className='bg-black justify-self-center text-center' form='new' name='pricePerCharge' size={6} value={price}/>{' '}e
           </span>
           <div className='grid grid-cols-2'>
             <AdjustButton value={1} getter={price} setter={setPrice} />
