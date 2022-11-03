@@ -9,12 +9,8 @@ export type { ChargeEvent } from '@prisma/client'
 export function getChargeEvents({ userId }: { userId: User['id'] }) {
   return prisma.chargeEvent.findMany({
     where: { userId },
-    select: {
-      id: true,
-      date: true,
-      kiloWattHours: true,
-      pricePerCharge: true,
-      provider: true,
+    include: {
+      providerFK: true
     },
     orderBy: { date: 'desc' },
   })

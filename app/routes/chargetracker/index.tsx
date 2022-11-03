@@ -1,3 +1,4 @@
+import type { ChargeEvent} from '@prisma/client';
 import { Prisma } from '@prisma/client';
 import type { ActionArgs, LoaderArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
@@ -30,6 +31,7 @@ export async function loader({ request }: LoaderArgs) {
     date: format(event.date),
     kiloWattHours: event.kiloWattHours.toNumber(),
     pricePerCharge: event.pricePerCharge.toNumber(),
+    providerFK: event.providerFK
   }))
   const providers = (await getProviderCounts(userId))
   return json({ chargeEvents, providers })
@@ -83,27 +85,30 @@ function DateAdjustButton(props: { value: number, getter: Date, setter: (newValu
   )
 }
 
-interface NewChargeEntryProps {
+interface ChargeEntryProps {
   providers: Provider[]
+  event?: ChargeEvent & { providerFK: Provider }
 }
 
-function NewChargeEntry(props: NewChargeEntryProps) {
-  const { providers } = props
+function ChargeEntry(props: ChargeEntryProps) {
+  const { providers, event } = props
+  const mode = event ? 'update' : 'insert'
 
-  const [date, setDate] = useState(new Date())
-  const [kiloWattHours, setKiloWattHours] = useState(0)
-  const [price, setPrice] = useState(0)
-  const [provider, setProvider] = useState(_.first(providers))
+  const [date, setDate] = useState(event?.date ?? new Date())
+  const [kiloWattHours, setKiloWattHours] = useState(event?.kiloWattHours.toNumber() ?? 0)
+  const [price, setPrice] = useState(event?.pricePerCharge.toNumber() ?? 0)
+  const [provider, setProvider] = useState(event?.providerFK ?? _.first(providers))
 
   return (
-    <Form id='new' method='post'>
-      <input type='hidden' name='_action' value='new' form='new' readOnly />
+    <Form method='post'>
+      <input type='hidden' name='_action' value={mode} readOnly />
+      {event && <input type='hidden' name='id' value={event.id.toString()} readOnly /> }
       <div className='grid grid-cols-4'>
         <div className='justify-self-center grid'>
           <div className='grid grid-cols-1 w-1/2'>
             <DateAdjustButton value={-1} getter={date} setter={setDate} />
           </div>
-          <input type='text' className='bg-black' form='new' name='date' size={10} value={format(date)}/>
+          <input type='text' className='bg-black' name='date' size={10} value={format(date)}/>
           <div className='grid grid-cols-1 w-1/2'>
             <DateAdjustButton value={1} getter={date} setter={setDate} />
           </div>
@@ -114,7 +119,7 @@ function NewChargeEntry(props: NewChargeEntryProps) {
             <AdjustButton value={-0.1} getter={kiloWattHours} setter={setKiloWattHours} />
           </div>
           <span className='grid grid-cols-2 items-center'>
-            <input type='text' className='bg-black justify-self-center text-center' form='new' name='kiloWattHours' size={6} value={kiloWattHours}/>{' '}kWh
+            <input type='text' className='bg-black justify-self-center text-center' name='kiloWattHours' size={6} value={kiloWattHours}/>{' '}kWh
           </span>
           <div className='grid grid-cols-2'>
             <AdjustButton value={1} getter={kiloWattHours} setter={setKiloWattHours} />
@@ -127,7 +132,7 @@ function NewChargeEntry(props: NewChargeEntryProps) {
             <AdjustButton value={-0.1} getter={price} setter={setPrice} />
           </div>
           <span className='grid grid-cols-2 items-center'>
-            <input type='text' className='bg-black justify-self-center text-center' form='new' name='pricePerCharge' size={6} value={price}/>{' '}e
+            <input type='text' className='bg-black justify-self-center text-center' name='pricePerCharge' size={6} value={price}/>{' '}e
           </span>
           <div className='grid grid-cols-2'>
             <AdjustButton value={1} getter={price} setter={setPrice} />
@@ -136,7 +141,7 @@ function NewChargeEntry(props: NewChargeEntryProps) {
         </div>
         <div className='grid grid-rows-3'>
           <div className='dropdown dropdown-left row-start-1'>
-            <input type='hidden' value={provider?.name || ''} name='provider' form='new' readOnly />
+            <input type='hidden' value={provider?.name || ''} name='provider' readOnly />
             <label tabIndex={0} className='btn btn-sm btn-primary rounded p-1 m-1'>{provider?.name || '???'}</label>
             <ul tabIndex={0} className='dropdown-content menu p-2 shadow bg-base-100 rounded w-52'>
               { providers.map(p =>
@@ -145,7 +150,8 @@ function NewChargeEntry(props: NewChargeEntryProps) {
             </ul>
           </div>
         </div>
-        <button type='submit' className='my-8 col-span-4 justify-self-center btn btn-primary rounded' value='insert'>insert</button>
+        <button type='submit' className='my-8 col-span-4 justify-self-center btn btn-primary rounded' 
+          value={mode}>{mode}</button>
       </div>
     </Form>
   )
@@ -166,7 +172,6 @@ export default function ChargeTrackerIndexPage() {
 
   return (
     <div className='container mx-auto p-4'>
-      <NewChargeEntry providers={providers} />
       <div className='grid grid-cols-3 my-2 text-lg font-bold'>
         <div>
           {total.count} charges
@@ -178,9 +183,6 @@ export default function ChargeTrackerIndexPage() {
           {total.price ?? 0}e
         </div>
       </div>
-      <>
-        { chargeEvents.map(({id}) => <Form key={`form-${id}`} method='post' id={id} />)}
-      </>
       <table className='table-auto border-collapse cursor-pointer touch-pinch-zoom container mx-auto box-content'>
         <thead>
           <tr>
@@ -192,24 +194,29 @@ export default function ChargeTrackerIndexPage() {
           </tr>
         </thead>
         <tbody>
+          <tr>
+            <td colSpan={5}>
+              <ChargeEntry providers={providers} />
+            </td>
+          </tr>
         { chargeEvents.map(
           ({ id, date, kiloWattHours, pricePerCharge, provider }) => {
             return (
               <tr key={`tr-${id}`}>
                 <td className='py-1 pr-2'>
-                  <input type='text' className='bg-black' name='date' size={10} form={id} defaultValue={date} />
+                  {date}
                 </td>
                 <td className='text-right px-2'>
-                  <input type='text' className='bg-black' name='kiloWattHours' size={6} form={id} defaultValue={kiloWattHours} />
+                  {kiloWattHours}
                 </td>
                 <td className='text-right px-2'>
-                  <input type='text' className='bg-black' name='pricePerCharge' size={4} form={id} defaultValue={pricePerCharge} />
+                  {pricePerCharge}
                 </td> 
                 <td className='text-right px-2'>
                   {_.round(pricePerCharge / kiloWattHours, 2)}
                 </td> 
                 <td className='pl-2'>
-                  <input type='text' className='bg-black' name='provider' size={8} maxLength={20} form={id} defaultValue={provider} />
+                  {provider}
                 </td>
               </tr>
             )})}
