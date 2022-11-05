@@ -22,6 +22,10 @@ function format(date: Date) {
   return dayjs.utc(date).format('DD.MM.YYYY')
 }
 
+function parse(dateStr: string) {
+  return dayjs.utc(dateStr, 'DD.MM.YYYY').toDate()
+}
+
 export async function loader({ request }: LoaderArgs) {
   const userId = await requireUserId(request)
   const rawChargeEvents = await getChargeEvents({ userId })
@@ -47,7 +51,7 @@ export async function action({request}: ActionArgs) {
   if ('new' === _action) {
     const { date, kiloWattHours, pricePerCharge, provider } = values
 
-    const parsedDate = dayjs.utc(date.toString(), 'DD.MM.YYYY').toDate()
+    const parsedDate = parse(date.toString())
     logger.info(`parsedDate ${date} ${parsedDate}`)
 
     const result = await createChargeEvent({
@@ -150,7 +154,8 @@ function ChargeEntry(props: ChargeEntryProps) {
             </ul>
           </div>
         </div>
-        <button type='submit' className='my-8 col-span-4 justify-self-center btn btn-primary rounded' 
+        <button type='submit' 
+          className='my-4 col-span-4 justify-self-center btn btn-primary rounded' 
           value={mode}>{mode}</button>
       </div>
     </Form>
@@ -183,7 +188,7 @@ export default function ChargeTrackerIndexPage() {
           {total.price ?? 0}e
         </div>
       </div>
-      <table className='table-auto border-collapse cursor-pointer touch-pinch-zoom container mx-auto box-content'>
+      <table className='table-auto border-collapse cursor-pointer touch-pinch-zoom container mx-auto box-content text-xs'>
         <thead>
           <tr>
             <th>Date</th>
@@ -203,20 +208,23 @@ export default function ChargeTrackerIndexPage() {
           ({ id, date, kiloWattHours, pricePerCharge, provider }) => {
             return (
               <tr key={`tr-${id}`}>
-                <td className='py-1 pr-2'>
+                <td className='py-1 pr-1'>
                   {date}
                 </td>
-                <td className='text-right px-2'>
+                <td className='text-right px-1'>
                   {kiloWattHours}
                 </td>
-                <td className='text-right px-2'>
+                <td className='text-right px-1'>
                   {pricePerCharge}
                 </td> 
-                <td className='text-right px-2'>
+                <td className='text-right px-1'>
                   {_.round(pricePerCharge / kiloWattHours, 2)}
                 </td> 
                 <td className='pl-2'>
                   {provider}
+                </td>
+                <td>
+                  <input type='button' className='btn btn-outline  btn-error min-h-0 h-7 rounded p-2' value='X' />
                 </td>
               </tr>
             )})}
