@@ -7,7 +7,7 @@ declare global {
   var __db__: PrismaClient
 }
 
-(BigInt.prototype as any).toJSON = function () {
+;(BigInt.prototype as any).toJSON = function () {
   return Number(this)
 }
 

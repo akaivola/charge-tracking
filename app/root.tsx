@@ -30,12 +30,12 @@ export async function loader({ request }: LoaderArgs) {
 
 export default function App() {
   return (
-    <html data-theme='forest' lang="en" className="h-full">
+    <html data-theme="forest" lang="en" className="h-full">
       <head>
         <Meta />
         <Links />
       </head>
-      <body className="h-full font-mono bg-black text-green-400">
+      <body className="h-full bg-black font-mono text-green-400">
         <Outlet />
         <ScrollRestoration />
         <Scripts />

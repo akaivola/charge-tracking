@@ -32,8 +32,7 @@ export async function getUserId(
 ): Promise<User['id'] | undefined> {
   const session = await getSession(request)
   const userId = Number(session.get(USER_SESSION_KEY))
-  if (_.isNaN(userId) || ! await getUserById(BigInt(userId)))
-    return undefined
+  if (_.isNaN(userId) || !(await getUserById(BigInt(userId)))) return undefined
 
   return userId as unknown as User['id']
 }
@@ -45,8 +44,7 @@ export async function getUser(request: Request) {
   try {
     const user = await getUserById(userId)
     if (user) return user
-  }
-  catch (error) {
+  } catch (error) {
     throw await logout(request)
   }
 }

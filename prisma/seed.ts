@@ -91,10 +91,11 @@ async function seed() {
     k: 'k-lataus',
     l: 'lidl',
     i: 'ikea',
-    o: 'other'
+    o: 'other',
   }
   reader.on('line', async (row) => {
-    const [dateRaw, kiloWattHours, pricePerCharge, _, providerRaw] = row.split(',')
+    const [dateRaw, kiloWattHours, pricePerCharge, _, providerRaw] =
+      row.split(',')
     logger.info(row)
     const [d, m, y] = dateRaw.split('.')
     const provider = providersMap[providerRaw] || providerRaw
