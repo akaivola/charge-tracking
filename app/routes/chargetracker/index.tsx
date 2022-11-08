@@ -8,7 +8,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import utc from 'dayjs/plugin/utc'
 import _ from 'lodash';
 import type { SyntheticEvent } from 'react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { createChargeEvent, getChargeEvents } from '~/models/chargeevents.server';
 import { requireUserId } from '~/session.server';
 import { logger } from '../../logger.server';
@@ -176,8 +176,8 @@ export default function ChargeTrackerIndexPage() {
   }, {kWh: 0, price: 0, count: 0})
 
   return (
-    <div className='container mx-auto p-4'>
-      <div className='grid grid-cols-3 my-2 text-lg font-bold'>
+    <main className='container mx-auto p-4'>
+      <section className='grid grid-cols-3 my-2 text-lg font-bold'>
         <div>
           {total.count} charges
         </div>
@@ -187,49 +187,46 @@ export default function ChargeTrackerIndexPage() {
         <div>
           {total.price ?? 0}e
         </div>
-      </div>
-      <table className='table-auto border-collapse cursor-pointer touch-pinch-zoom container mx-auto box-content text-xs'>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>kWh</th>
-            <th>e / charge</th>
-            <th>e * kWh</th>
-            <th>Provider</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td colSpan={5}>
-              <ChargeEntry providers={providers} />
-            </td>
-          </tr>
-        { chargeEvents.map(
-          ({ id, date, kiloWattHours, pricePerCharge, provider }) => {
-            return (
-              <tr key={`tr-${id}`}>
-                <td className='py-1 pr-1'>
-                  {date}
-                </td>
-                <td className='text-right px-1'>
-                  {kiloWattHours}
-                </td>
-                <td className='text-right px-1'>
-                  {pricePerCharge}
-                </td> 
-                <td className='text-right px-1'>
-                  {_.round(pricePerCharge / kiloWattHours, 2)}
-                </td> 
-                <td className='pl-2'>
-                  {provider}
-                </td>
-                <td>
-                  <input type='button' className='btn btn-outline  btn-error min-h-0 h-7 rounded p-2' value='X' />
-                </td>
-              </tr>
-            )})}
-        </tbody>
-      </table>
-  </div>
+      </section>
+
+      <section>
+        <div>
+          New Entry
+          <ChargeEntry providers={providers} />
+        </div>
+        <div className='grid grid-cols-12 text-xs'>
+          <div className='col-span-3'>Date</div>
+          <div className='col-span-2 text-right'>kWh</div>
+          <div className='col-span-2 text-right'>e/ charge</div>
+          <div className='col-span-1 text-right'>e * kWh</div>
+          <div className='col-span-4'>Provider</div>
+          { chargeEvents.map(
+            ({id, date, kiloWattHours, pricePerCharge, provider }) => {
+              return (
+                <React.Fragment key={id}>
+                  <div className='col-span-3'>
+                    {date}
+                  </div>
+                  <div className='col-span-2 text-right'>
+                    {kiloWattHours}
+                  </div>
+                  <div className='col-span-2 text-right'>
+                    {pricePerCharge}
+                  </div> 
+                  <div className='col-span-1 text-right'>
+                    {_.round(pricePerCharge / kiloWattHours, 2)}
+                  </div> 
+                  <div className='col-span-2'>
+                    {provider}
+                  </div>
+                  <div className='col-span-2 grid grid-cols-2'>
+                    <input type='button' className='btn btn-outline btn-warning min-h-0 h-7 rounded p-2' value='M' />
+                    <input type='button' className='btn btn-outline btn-error min-h-0 h-7 rounded p-2' value='X' />
+                  </div>
+                </React.Fragment>
+              )})}
+        </div>
+      </section>
+  </main>
   )
 }
