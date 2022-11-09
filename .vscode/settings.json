@@ -7,5 +7,6 @@
   "files.autoSave": "onFocusChange", // optional but recommended
   "[prisma]": {
     "editor.defaultFormatter": "Prisma.prisma"
-  }
+  },
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
