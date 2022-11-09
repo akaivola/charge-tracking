@@ -1,8 +1,9 @@
 import type { ChargeEvent } from '@prisma/client'
 import { Prisma } from '@prisma/client'
-import type { ActionArgs, LoaderArgs, MetaFunction, SerializeFrom } from '@remix-run/node'
+import type { ActionArgs, LoaderArgs, MetaFunction } from '@remix-run/node'
 import { json } from '@remix-run/node'
-import { Form, useFetcher, useLoaderData } from '@remix-run/react'
+import { Form, useLoaderData } from '@remix-run/react'
+import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 import utc from 'dayjs/plugin/utc'
@@ -12,6 +13,8 @@ import React, { useState } from 'react'
 import {
   createChargeEvent,
   getChargeEvents,
+  updateChargeEvent,
+  upsertChargeEvent,
 } from '~/models/chargeevents.server'
 import { requireUserId } from '~/session.server'
 import { logger } from '../../logger.server'
@@ -20,6 +23,10 @@ import { getProviderCounts } from '../../models/providers.server'
 
 dayjs.extend(customParseFormat)
 dayjs.extend(utc)
+
+function formatDay(dayjs: Dayjs) {
+  return dayjs.format('DD.MM.YYY')
+}
 
 function format(date: Date) {
   return dayjs.utc(date).format('DD.MM.YYYY')
@@ -51,12 +58,9 @@ export async function action({ request }: ActionArgs) {
 
   logger.info(`action: ${_action} ${JSON.stringify(values)}`)
 
+  const { date, kiloWattHours, pricePerCharge, provider } = values
   if ('new' === _action) {
-    const { date, kiloWattHours, pricePerCharge, provider } = values
-
     const parsedDate = parse(date.toString())
-    logger.info(`parsedDate ${date} ${parsedDate}`)
-
     const result = await createChargeEvent({
       userId,
       date: parsedDate.toDate(),
@@ -65,14 +69,25 @@ export async function action({ request }: ActionArgs) {
       provider: provider.toString(),
     })
 
+    return json({ result })
+  }
+
+  if ('update' === _action) {
+    const parsedDate = parse(date.toString())
+    const result = await updateChargeEvent({
+      userId,
+      id: BigInt(values.id.toString()),
+      date: parsedDate.toDate(),
+      kiloWattHours: new Prisma.Decimal(kiloWattHours.toString()),
+      pricePerCharge: new Prisma.Decimal(pricePerCharge.toString()),
+      provider: provider.toString(),
+    })
+
     logger.info(JSON.stringify(result))
+    return json({ result })
   }
 
-  if ('modify' === _action) {
-
-  }
-
-  return null
+  return json({error: "unknown action"})
 }
 
 export const meta: MetaFunction = () => {
@@ -103,8 +118,8 @@ function DateAdjustButton(props: {
   setter: (newValue: string) => unknown
 }) {
   const oldDate = parse(props.getter)
-  const newDate =  oldDate.add(1, 'day')
-  const onClick = (_e: SyntheticEvent) => props.setter(format(newDate))
+  const newDate = oldDate.add(1, 'day')
+  const onClick = (_e: SyntheticEvent) => props.setter(formatDay(newDate))
   return (
     <input
       type="button"
@@ -115,11 +130,12 @@ function DateAdjustButton(props: {
   )
 }
 
-type ChargeEventSerialized = ChargeEvent & { 
-  date: string,
-  kiloWattHours: number,
-  pricePerCharge: number,
-  providerFK: Provider 
+// https://github.com/prisma/prisma/discussions/14371
+type ChargeEventSerialized = ChargeEvent & {
+  date: string
+  kiloWattHours: number
+  pricePerCharge: number
+  providerFK: Provider
 }
 
 interface ChargeEntryProps {
@@ -130,12 +146,9 @@ interface ChargeEntryProps {
 function ChargeEntry(props: ChargeEntryProps) {
   const { providers, event } = props
   const mode = event?.id ? 'update' : 'insert'
-  console.log(event)
 
   const [date, setDate] = useState(event?.date ?? format(new Date()))
-  const [kiloWattHours, setKiloWattHours] = useState(
-    event?.kiloWattHours ?? 0
-  )
+  const [kiloWattHours, setKiloWattHours] = useState(event?.kiloWattHours ?? 0)
   const [price, setPrice] = useState(event?.pricePerCharge ?? 0)
   const [provider, setProvider] = useState(
     event?.providerFK ?? _.first(providers)
@@ -268,9 +281,7 @@ function ChargeEntry(props: ChargeEntryProps) {
 
 export default function ChargeTrackerIndexPage() {
   const { chargeEvents, providers } = useLoaderData<typeof loader>()
-  const { state, type, submission, data, submit, load } = useFetcher()
-  const [ event, setEvent ] = useState({})
-  console.log(state, type, submission, data)
+  const [event, setEvent] = useState({})
 
   const total = chargeEvents.reduce(
     ({ kWh, price, count }, ce) => {
@@ -296,27 +307,46 @@ export default function ChargeTrackerIndexPage() {
           New Entry
           <ChargeEntry event={event} providers={providers} />
         </div>
-        <div className="grid grid-cols-12 gap-y-3 gap-x-6 text-xs">
+        <div className="md:text-md grid grid-cols-12 gap-y-3 gap-x-6 sm:text-xs lg:text-lg">
           <div className="col-span-3">Date</div>
           <div className="col-span-2 text-right">kWh</div>
           <div className="col-span-2 text-right">e/ charge</div>
           <div className="col-span-2 text-right">e * kWh</div>
           <div className="col-span-3">Provider</div>
           {chargeEvents.map((event) => {
-              const { id, date, kiloWattHours, pricePerCharge, provider } = event
-              return (
-                <React.Fragment key={id}>
-                  <div onClick={_ => setEvent(event)} className="col-span-3">{date}</div>
-                  <div onClick={_ => setEvent(event)} className="col-span-2 text-right">{kiloWattHours}</div>
-                  <div onClick={_ => setEvent(event)} className="col-span-2 text-right">{pricePerCharge}</div>
-                  <div onClick={_ => setEvent(event)} className="col-span-2 text-right">
-                    {_.round(pricePerCharge / kiloWattHours, 2)}
-                  </div>
-                  <div onClick={_ => setEvent(event)} className="col-span-3">{provider}</div>
-                </React.Fragment>
-              )
-            }
-          )}
+            const { id, date, kiloWattHours, pricePerCharge, provider } = event
+            return (
+              <React.Fragment key={id}>
+                <div
+                  onClick={(_) => setEvent(event)}
+                  className="col-span-3 cursor-pointer"
+                >
+                  {date}
+                </div>
+                <div
+                  onClick={(_) => setEvent(event)}
+                  className="col-span-2 text-right"
+                >
+                  {kiloWattHours}
+                </div>
+                <div
+                  onClick={(_) => setEvent(event)}
+                  className="col-span-2 text-right"
+                >
+                  {pricePerCharge}
+                </div>
+                <div
+                  onClick={(_) => setEvent(event)}
+                  className="col-span-2 text-right"
+                >
+                  {_.round(pricePerCharge / kiloWattHours, 2)}
+                </div>
+                <div onClick={(_) => setEvent(event)} className="col-span-3">
+                  {provider}
+                </div>
+              </React.Fragment>
+            )
+          })}
         </div>
       </section>
     </main>

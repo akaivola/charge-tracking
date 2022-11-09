@@ -24,16 +24,18 @@ export function createChargeEvent(
   })
 }
 
-export function upsertChargeEvent(
-  chargeEvent: Omit<ChargeEvent, 'id' | 'createdAt' | 'updatedAt'> & {
-    id?: bigint
-  }
+export async function updateChargeEvent(
+  chargeEvent: Omit<ChargeEvent, 'createdAt' | 'updatedAt'>
 ) {
   // updatedAt could be used as an optimistic lock
   invariant(chargeEvent.userId, 'userId cannot be missing')
-  return prisma.chargeEvent.upsert({
-    where: { id: chargeEvent.id },
-    update: { ..._.omit(chargeEvent, 'createdAt'), updatedAt: new Date() },
-    create: _.omit(chargeEvent, 'createdAt', 'updatedAt', 'id'),
+  return prisma.chargeEvent.updateMany({
+    where: {
+      id: chargeEvent.id,
+      user: {
+        id: chargeEvent.userId,
+      },
+    },
+    data: { ..._.omit(chargeEvent, 'createdAt'), updatedAt: new Date() },
   })
 }
