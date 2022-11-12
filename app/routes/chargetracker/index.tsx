@@ -1,8 +1,6 @@
-import type { ChargeEvent } from '@prisma/client'
 import { Prisma } from '@prisma/client'
 import type { ActionArgs, LoaderArgs, MetaFunction } from '@remix-run/node'
-import { json } from '@remix-run/node'
-import { Form, useLoaderData } from '@remix-run/react'
+import { Form } from '@remix-run/react'
 import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
 import customParseFormat from 'dayjs/plugin/customParseFormat'
@@ -10,11 +8,11 @@ import utc from 'dayjs/plugin/utc'
 import _ from 'lodash'
 import type { SyntheticEvent } from 'react'
 import React, { useState } from 'react'
+import { typedjson, useTypedLoaderData } from 'remix-typedjson'
 import {
   createChargeEvent,
   getChargeEvents,
   updateChargeEvent,
-  upsertChargeEvent,
 } from '~/models/chargeevents.server'
 import { requireUserId } from '~/session.server'
 import { logger } from '../../logger.server'
@@ -48,7 +46,7 @@ export async function loader({ request }: LoaderArgs) {
     providerFK: event.providerFK,
   }))
   const providers = await getProviderCounts(userId)
-  return json({ chargeEvents, providers })
+  return typedjson({ chargeEvents, providers })
 }
 
 export async function action({ request }: ActionArgs) {
@@ -59,7 +57,7 @@ export async function action({ request }: ActionArgs) {
   logger.info(`action: ${_action} ${JSON.stringify(values)}`)
 
   const { date, kiloWattHours, pricePerCharge, provider } = values
-  if ('new' === _action) {
+  if ('insert' === _action) {
     const parsedDate = parse(date.toString())
     const result = await createChargeEvent({
       userId,
@@ -69,7 +67,7 @@ export async function action({ request }: ActionArgs) {
       provider: provider.toString(),
     })
 
-    return json({ result })
+    return typedjson({ result })
   }
 
   if ('update' === _action) {
@@ -84,10 +82,10 @@ export async function action({ request }: ActionArgs) {
     })
 
     logger.info(JSON.stringify(result))
-    return json({ result })
+    return typedjson({ result })
   }
 
-  return json({error: "unknown action"})
+  return typedjson({ error: 'unknown action' })
 }
 
 export const meta: MetaFunction = () => {
@@ -130,17 +128,13 @@ function DateAdjustButton(props: {
   )
 }
 
-// https://github.com/prisma/prisma/discussions/14371
-type ChargeEventSerialized = ChargeEvent & {
-  date: string
-  kiloWattHours: number
-  pricePerCharge: number
-  providerFK: Provider
-}
+type PromiseLoader = Awaited<ReturnType<typeof loader>>['typedjson']
+type Loader = Awaited<ReturnType<PromiseLoader>>
+type SerializedChargeEvent = Loader['chargeEvents'][number]
 
 interface ChargeEntryProps {
   providers: Provider[]
-  event?: Partial<ChargeEventSerialized>
+  event?: Partial<SerializedChargeEvent>
 }
 
 function ChargeEntry(props: ChargeEntryProps) {
@@ -280,8 +274,8 @@ function ChargeEntry(props: ChargeEntryProps) {
 }
 
 export default function ChargeTrackerIndexPage() {
-  const { chargeEvents, providers } = useLoaderData<typeof loader>()
-  const [event, setEvent] = useState({})
+  const { chargeEvents, providers } = useTypedLoaderData<typeof loader>()
+  const [event, setEvent] = useState({} as SerializedChargeEvent)
 
   const total = chargeEvents.reduce(
     ({ kWh, price, count }, ce) => {
