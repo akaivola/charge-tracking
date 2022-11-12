@@ -9,6 +9,7 @@ import _ from 'lodash'
 import type { SyntheticEvent } from 'react'
 import React, { useState } from 'react'
 import { typedjson, useTypedLoaderData } from 'remix-typedjson'
+import { setEnvironmentData } from 'worker_threads'
 import {
   createChargeEvent,
   getChargeEvents,
@@ -133,6 +134,7 @@ type Loader = Awaited<ReturnType<PromiseLoader>>
 type SerializedChargeEvent = Loader['chargeEvents'][number]
 
 interface ChargeEntryProps {
+  newEvent: () => void 
   providers: Provider[]
   event?: Partial<SerializedChargeEvent>
 }
@@ -149,12 +151,10 @@ function ChargeEntry(props: ChargeEntryProps) {
   )
 
   React.useEffect(() => {
-    if (event?.id) {
-      setDate(event?.date!)
-      setKiloWattHours(event?.kiloWattHours!)
-      setPrice(event?.pricePerCharge!)
-      setProvider(event?.providerFK)
-    }
+    setDate(event?.date ?? format(new Date()))
+    setKiloWattHours(event?.kiloWattHours ?? 0)
+    setPrice(event?.pricePerCharge ?? 0)
+    setProvider(event?.providerFK ?? _.first(providers))
   }, [event])
 
   return (
@@ -261,13 +261,12 @@ function ChargeEntry(props: ChargeEntryProps) {
             </ul>
           </div>
         </div>
-        <button
+        <input type='button' value='New entry' onClick={(_) => props.newEvent()} className='rounded btn btn-warning px-2 my-4 justify-self-center'/>
+        <input
           type="submit"
-          className="btn btn-primary col-span-4 my-4 justify-self-center rounded"
+          className="btn btn-warning col-span-2 my-4 justify-self-center rounded"
           value={mode}
-        >
-          {mode}
-        </button>
+        />
       </div>
     </Form>
   )
@@ -298,10 +297,9 @@ export default function ChargeTrackerIndexPage() {
 
       <section>
         <div>
-          New Entry
-          <ChargeEntry event={event} providers={providers} />
+          <ChargeEntry event={event} providers={providers} newEvent={() => setEvent({} as SerializedChargeEvent)} />
         </div>
-        <section className="md:text-md grid grid-cols-12 gap-x-6 sm:text-xs lg:text-lg">
+        <section className="md:text-md grid grid-cols-12 gap-x-6 gap-y-2">
           <div className="col-span-3">Date</div>
           <div className="col-span-2 text-right">kWh</div>
           <div className="col-span-2 text-right">e/ charge</div>
@@ -314,7 +312,7 @@ export default function ChargeTrackerIndexPage() {
             return (
               <div
                 key={id.toString()}
-                className="col-span-full grid grid-cols-12 gap-y-3 gap-x-6"
+                className={`col-span-full grid grid-cols-12 gap-x-6 text-xs md:text-base ${isSelected ? 'text-warning' : ''}`}
                 onClick={() => setEvent(anEvent)}
               >
                 <div className="col-span-3 cursor-pointer">{date}</div>
