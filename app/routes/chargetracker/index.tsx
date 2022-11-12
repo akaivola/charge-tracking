@@ -301,47 +301,33 @@ export default function ChargeTrackerIndexPage() {
           New Entry
           <ChargeEntry event={event} providers={providers} />
         </div>
-        <div className="md:text-md grid grid-cols-12 gap-y-3 gap-x-6 sm:text-xs lg:text-lg">
+        <section className="md:text-md grid grid-cols-12 gap-x-6 sm:text-xs lg:text-lg">
           <div className="col-span-3">Date</div>
           <div className="col-span-2 text-right">kWh</div>
           <div className="col-span-2 text-right">e/ charge</div>
           <div className="col-span-2 text-right">e * kWh</div>
           <div className="col-span-3">Provider</div>
-          {chargeEvents.map((event) => {
-            const { id, date, kiloWattHours, pricePerCharge, provider } = event
+          {chargeEvents.map((anEvent) => {
+            const { id, date, kiloWattHours, pricePerCharge, provider } =
+              anEvent
+            const isSelected = event && event.id === id
             return (
-              <React.Fragment key={id}>
-                <div
-                  onClick={(_) => setEvent(event)}
-                  className="col-span-3 cursor-pointer"
-                >
-                  {date}
-                </div>
-                <div
-                  onClick={(_) => setEvent(event)}
-                  className="col-span-2 text-right"
-                >
-                  {kiloWattHours}
-                </div>
-                <div
-                  onClick={(_) => setEvent(event)}
-                  className="col-span-2 text-right"
-                >
-                  {pricePerCharge}
-                </div>
-                <div
-                  onClick={(_) => setEvent(event)}
-                  className="col-span-2 text-right"
-                >
+              <div
+                key={id.toString()}
+                className="col-span-full grid grid-cols-12 gap-y-3 gap-x-6"
+                onClick={() => setEvent(anEvent)}
+              >
+                <div className="col-span-3 cursor-pointer">{date}</div>
+                <div className="col-span-2 text-right">{kiloWattHours}</div>
+                <div className="col-span-2 text-right">{pricePerCharge}</div>
+                <div className="col-span-2 text-right">
                   {_.round(pricePerCharge / kiloWattHours, 2)}
                 </div>
-                <div onClick={(_) => setEvent(event)} className="col-span-3">
-                  {provider}
-                </div>
-              </React.Fragment>
+                <div className="col-span-3">{provider}</div>
+              </div>
             )
           })}
-        </div>
+        </section>
       </section>
     </main>
   )
