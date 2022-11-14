@@ -39,3 +39,18 @@ export async function updateChargeEvent(
     data: { ..._.omit(chargeEvent, 'createdAt'), updatedAt: new Date() },
   })
 }
+
+export async function deleteChargeEvent(
+  chargeEvent: Pick<ChargeEvent, 'id' | 'userId'>
+) {
+  invariant(chargeEvent.id, 'id cannot be missing')
+  invariant(chargeEvent.userId, 'userId cannot be missing')
+  return prisma.chargeEvent.deleteMany({
+    where: {
+      id: chargeEvent.id,
+      user: {
+        id: chargeEvent.userId,
+      },
+    },
+  })
+}

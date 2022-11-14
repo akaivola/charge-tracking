@@ -9,11 +9,11 @@ import _ from 'lodash'
 import type { SyntheticEvent } from 'react'
 import React, { useState } from 'react'
 import { typedjson, useTypedLoaderData } from 'remix-typedjson'
-import { setEnvironmentData } from 'worker_threads'
 import {
   createChargeEvent,
+  deleteChargeEvent,
   getChargeEvents,
-  updateChargeEvent,
+  updateChargeEvent
 } from '~/models/chargeevents.server'
 import { requireUserId } from '~/session.server'
 import { logger } from '../../logger.server'
@@ -86,6 +86,14 @@ export async function action({ request }: ActionArgs) {
     return typedjson({ result })
   }
 
+  if ('delete' === _action) {
+    const result = await deleteChargeEvent({
+      userId,
+      id: BigInt(values.id.toString()),
+    })
+    return typedjson({ result })
+  }
+
   return typedjson({ error: 'unknown action' })
 }
 
@@ -134,7 +142,7 @@ type Loader = Awaited<ReturnType<PromiseLoader>>
 type SerializedChargeEvent = Loader['chargeEvents'][number]
 
 interface ChargeEntryProps {
-  newEvent: () => void 
+  newEvent: () => void
   providers: Provider[]
   event?: Partial<SerializedChargeEvent>
 }
@@ -159,7 +167,6 @@ function ChargeEntry(props: ChargeEntryProps) {
 
   return (
     <Form method="post">
-      <input type="hidden" name="_action" value={mode} readOnly />
       {event && (
         <input type="hidden" name="id" value={event.id?.toString()} readOnly />
       )}
@@ -173,6 +180,7 @@ function ChargeEntry(props: ChargeEntryProps) {
             className="bg-black"
             name="date"
             size={10}
+            readOnly
             value={date}
           />
           <div className="grid w-1/2 grid-cols-1">
@@ -198,6 +206,7 @@ function ChargeEntry(props: ChargeEntryProps) {
               className="justify-self-center bg-black text-center"
               name="kiloWattHours"
               size={6}
+              onChange={(e) => setKiloWattHours(Number(e.target.value))}
               value={kiloWattHours}
             />{' '}
             kWh
@@ -226,6 +235,7 @@ function ChargeEntry(props: ChargeEntryProps) {
               className="justify-self-center bg-black text-center"
               name="pricePerCharge"
               size={6}
+              onChange={(e) => setPrice(Number(e.target.value))}
               value={price}
             />{' '}
             e
@@ -236,7 +246,7 @@ function ChargeEntry(props: ChargeEntryProps) {
           </div>
         </div>
         <div className="grid grid-rows-3">
-          <div className="dropdown dropdown-left row-start-1">
+          <div className="dropdown dropdown-left row-start-2">
             <input
               type="hidden"
               value={provider?.name || ''}
@@ -245,7 +255,7 @@ function ChargeEntry(props: ChargeEntryProps) {
             />
             <label
               tabIndex={0}
-              className="btn btn-primary btn-sm m-1 rounded p-1"
+              className="btn btn-secondary btn-sm m-1 rounded p-1"
             >
               {provider?.name || '???'}
             </label>
@@ -261,12 +271,26 @@ function ChargeEntry(props: ChargeEntryProps) {
             </ul>
           </div>
         </div>
-        <input type='button' value='New entry' onClick={(_) => props.newEvent()} className='rounded btn btn-warning px-2 my-4 justify-self-center'/>
+        <input
+          type="button"
+          defaultValue="Clear fields"
+          onClick={(_) => props.newEvent()}
+          className="btn btn-accent col-span-2 my-4 justify-self-center rounded px-2"
+        />
         <input
           type="submit"
-          className="btn btn-warning col-span-2 my-4 justify-self-center rounded"
-          value={mode}
+          name='_action'
+          className="btn btn-accent col-span-2 my-4 justify-self-center rounded"
+          defaultValue={mode}
         />
+        {'update' === mode && (
+          <input
+            type="submit"
+            name="_action"
+            className="btn btn-accent col-span-2 row-start-3 col-start-2 my-4 justify-self-center rounded"
+            defaultValue={'delete'}
+          />
+        )}
       </div>
     </Form>
   )
@@ -297,7 +321,11 @@ export default function ChargeTrackerIndexPage() {
 
       <section>
         <div>
-          <ChargeEntry event={event} providers={providers} newEvent={() => setEvent({} as SerializedChargeEvent)} />
+          <ChargeEntry
+            event={event}
+            providers={providers}
+            newEvent={() => setEvent({} as SerializedChargeEvent)}
+          />
         </div>
         <section className="md:text-md grid grid-cols-12 gap-x-6 gap-y-2">
           <div className="col-span-3">Date</div>
@@ -312,7 +340,9 @@ export default function ChargeTrackerIndexPage() {
             return (
               <div
                 key={id.toString()}
-                className={`col-span-full grid grid-cols-12 gap-x-6 text-xs md:text-base ${isSelected ? 'text-warning' : ''}`}
+                className={`col-span-full grid grid-cols-12 gap-x-6 text-xs md:text-base ${
+                  isSelected ? 'text-warning' : ''
+                }`}
                 onClick={() => setEvent(anEvent)}
               >
                 <div className="col-span-3 cursor-pointer">{date}</div>
