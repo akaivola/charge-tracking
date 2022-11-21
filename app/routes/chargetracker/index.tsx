@@ -281,14 +281,16 @@ function ChargeEntry(props: ChargeEntryProps) {
           type="submit"
           name='_action'
           className="btn btn-accent col-span-2 my-4 justify-self-center rounded"
-          defaultValue={mode}
+          readOnly
+          value={mode}
         />
         {'update' === mode && (
           <input
             type="submit"
             name="_action"
             className="btn btn-accent col-span-2 row-start-3 col-start-2 my-4 justify-self-center rounded"
-            defaultValue={'delete'}
+            readOnly
+            value={'delete'}
           />
         )}
       </div>
@@ -327,7 +329,7 @@ export default function ChargeTrackerIndexPage() {
             newEvent={() => setEvent({} as SerializedChargeEvent)}
           />
         </div>
-        <section className="md:text-md grid grid-cols-12 gap-x-6 gap-y-2">
+        <section className="md:text-md grid grid-cols-12 gap-x-6">
           <div className="col-span-3">Date</div>
           <div className="col-span-2 text-right">kWh</div>
           <div className="col-span-2 text-right">e/ charge</div>
@@ -340,12 +342,12 @@ export default function ChargeTrackerIndexPage() {
             return (
               <div
                 key={id.toString()}
-                className={`col-span-full grid grid-cols-12 gap-x-6 text-xs md:text-base ${
+                className={`col-span-full grid grid-cols-12 gap-x-6 text-xs py-2 md:text-base cursor-pointer ${
                   isSelected ? 'text-warning' : ''
                 }`}
                 onClick={() => setEvent(anEvent)}
               >
-                <div className="col-span-3 cursor-pointer">{date}</div>
+                <div className="col-span-3">{date}</div>
                 <div className="col-span-2 text-right">{kiloWattHours}</div>
                 <div className="col-span-2 text-right">{pricePerCharge}</div>
                 <div className="col-span-2 text-right">
