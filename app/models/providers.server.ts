@@ -1,5 +1,6 @@
 import type { Provider } from '@prisma/client'
 import { Prisma } from '@prisma/client'
+import { memoize } from 'lodash'
 import { prisma } from '~/db.server'
 
 import type { User } from '~/models/user.server'
@@ -34,4 +35,4 @@ export async function getProviderCounts(userId: User['id']) {
   )
 }
 
-initializeProviders().then(() => console.log('providers initialized'))
+memoize(() => initializeProviders().then(() => console.log('providers initialized')))()
