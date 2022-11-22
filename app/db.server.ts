@@ -1,5 +1,6 @@
-import { Prisma, PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
 import invariant from 'tiny-invariant'
+import { initializeProviders } from './models/providers.server'
 
 let prisma: PrismaClient
 
@@ -7,7 +8,7 @@ declare global {
   var __db__: PrismaClient
 }
 
-;(BigInt.prototype as any).toJSON = function () {
+; (BigInt.prototype as any).toJSON = function () {
   return Number(this)
 }
 
@@ -22,6 +23,7 @@ if (process.env.NODE_ENV === 'production') {
     global.__db__ = getClient()
   }
   prisma = global.__db__
+
 }
 
 function getClient() {

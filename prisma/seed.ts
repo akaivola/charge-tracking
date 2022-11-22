@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs'
 import fs from 'fs'
 import readline from 'readline'
 import { logger } from '../app/logger.server'
+import { initializeProviders } from '../app/models/providers.server'
 
 const prisma = new PrismaClient({
   errorFormat: 'pretty',
@@ -25,17 +26,6 @@ prisma.$on('error', (e) => {
   logger.error(e)
 })
 
-const providers = [
-  'abc',
-  'virta',
-  'recharge',
-  'office',
-  'k-lataus',
-  'lidl',
-  'ikea',
-  'home',
-  'other',
-]
 const email = 'dev@charge.run' // dev
 
 async function seed() {
@@ -58,11 +48,7 @@ async function seed() {
   })
 
   await prisma.provider.deleteMany()
-  await prisma.provider.createMany({
-    data: providers.map((p) => {
-      return { name: p! }
-    }),
-  })
+  await initializeProviders()
 
   await prisma.chargeEvent.deleteMany()
   var stream = fs.createReadStream('Charge Times - Log.csv')
