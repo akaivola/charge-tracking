@@ -64,22 +64,6 @@ async function seed() {
     }),
   })
 
-  await prisma.note.create({
-    data: {
-      title: 'My first note',
-      body: 'Hello, world!',
-      userId: user.id,
-    },
-  })
-
-  await prisma.note.create({
-    data: {
-      title: 'My second note',
-      body: 'Hello, world!',
-      userId: user.id,
-    },
-  })
-
   await prisma.chargeEvent.deleteMany()
   var stream = fs.createReadStream('Charge Times - Log.csv')
   var reader = readline.createInterface({ input: stream })
