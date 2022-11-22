@@ -284,11 +284,18 @@ function ChargeEntry(props: ChargeEntryProps) {
           readOnly
           value={mode}
         />
+        <input
+          type="submit"
+          name="_action"
+          className="btn btn-accent col-span-2 row-start-3 my-4 justify-self-center rounded"
+          readOnly
+          value='restore last'
+        />
         {'update' === mode && (
           <input
             type="submit"
             name="_action"
-            className="btn btn-accent col-span-2 col-start-2 row-start-3 my-4 justify-self-center rounded"
+            className="btn btn-accent col-span-2 col-start-3 row-start-3 my-4 justify-self-center rounded"
             readOnly
             value={'delete'}
           />
