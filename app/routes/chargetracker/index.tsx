@@ -13,7 +13,7 @@ import {
   createChargeEvent,
   deleteChargeEvent,
   getChargeEvents,
-  updateChargeEvent
+  updateChargeEvent,
 } from '~/models/chargeevents.server'
 import { requireUserId } from '~/session.server'
 import { logger } from '../../logger.server'
@@ -279,7 +279,7 @@ function ChargeEntry(props: ChargeEntryProps) {
         />
         <input
           type="submit"
-          name='_action'
+          name="_action"
           className="btn btn-accent col-span-2 my-4 justify-self-center rounded"
           readOnly
           value={mode}
@@ -288,7 +288,7 @@ function ChargeEntry(props: ChargeEntryProps) {
           <input
             type="submit"
             name="_action"
-            className="btn btn-accent col-span-2 row-start-3 col-start-2 my-4 justify-self-center rounded"
+            className="btn btn-accent col-span-2 col-start-2 row-start-3 my-4 justify-self-center rounded"
             readOnly
             value={'delete'}
           />
@@ -342,7 +342,7 @@ export default function ChargeTrackerIndexPage() {
             return (
               <div
                 key={id.toString()}
-                className={`col-span-full grid grid-cols-12 gap-x-6 text-xs py-2 md:text-base cursor-pointer ${
+                className={`col-span-full grid cursor-pointer grid-cols-12 gap-x-6 py-2 text-xs md:text-base ${
                   isSelected ? 'text-warning' : ''
                 }`}
                 onClick={() => setEvent(anEvent)}
