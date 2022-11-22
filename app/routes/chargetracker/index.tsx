@@ -24,7 +24,7 @@ dayjs.extend(customParseFormat)
 dayjs.extend(utc)
 
 function formatDay(dayjs: Dayjs) {
-  return dayjs.format('DD.MM.YYY')
+  return dayjs.format('DD.MM.YYYY')
 }
 
 function format(date: Date) {
@@ -125,7 +125,7 @@ function DateAdjustButton(props: {
   setter: (newValue: string) => unknown
 }) {
   const oldDate = parse(props.getter)
-  const newDate = oldDate.add(1, 'day')
+  const newDate = oldDate.add(props.value, 'day')
   const onClick = (_e: SyntheticEvent) => props.setter(formatDay(newDate))
   return (
     <input
@@ -343,7 +343,7 @@ export default function ChargeTrackerIndexPage() {
           <div className="col-span-2 text-right">e * kWh</div>
           <div className="col-span-3">Provider</div>
           {chargeEvents.map((anEvent) => {
-            const { id, date, kiloWattHours, pricePerCharge, provider } =
+            const { id, date, kiloWattHours, pricePerCharge, providerFK } =
               anEvent
             const isSelected = event && event.id === id
             return (
@@ -360,7 +360,7 @@ export default function ChargeTrackerIndexPage() {
                 <div className="col-span-2 text-right">
                   {_.round(pricePerCharge / kiloWattHours, 2)}
                 </div>
-                <div className="col-span-3">{provider}</div>
+                <div className="col-span-3">{providerFK.name}</div>
               </div>
             )
           })}
