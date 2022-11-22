@@ -6,27 +6,46 @@ import { prisma } from '~/db.server'
 
 export type { ChargeEvent } from '@prisma/client'
 
+const chargeEventSelect = {
+  id: true,
+  date: true,
+  kiloWattHours: true,
+  pricePerCharge: true,
+  userId: true,
+  providerFK: {
+    select: {
+      name: true,
+    },
+  },
+}
+
 export function getChargeEvents({ userId }: { userId: User['id'] }) {
   return prisma.chargeEvent.findMany({
+    select: chargeEventSelect,
     where: {
       userId,
       deletedAt: {
         equals: null,
       },
     },
-    select: {
-      id: true,
-      date: true,
-      kiloWattHours: true,
-      pricePerCharge: true,
-      userId: true,
-      providerFK: {
-        select: {
-          name: true,
-        },
-      },
+    orderBy: {
+      date: 'desc'
     },
-    orderBy: { date: 'desc' },
+  })
+}
+
+export function getLastDeletedChargeEvent({ userId }: { userId: User['id'] }) {
+  return prisma.chargeEvent.findFirst({
+    select: chargeEventSelect,
+    where: {
+      userId,
+      deletedAt: {
+        not: null
+      }
+    },
+    orderBy: {
+      deletedAt: "desc"
+    }
   })
 }
 
