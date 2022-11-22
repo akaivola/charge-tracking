@@ -209,7 +209,7 @@ function ChargeEntry(props: ChargeEntryProps) {
               onChange={(e) => setKiloWattHours(Number(e.target.value))}
               value={kiloWattHours}
             />{' '}
-            kWh
+            <span className="select-none">kWh</span>
           </span>
           <div className="grid grid-cols-2">
             <AdjustButton
@@ -238,7 +238,7 @@ function ChargeEntry(props: ChargeEntryProps) {
               onChange={(e) => setPrice(Number(e.target.value))}
               value={price}
             />{' '}
-            e
+            <span className="select-none">e</span>
           </span>
           <div className="grid grid-cols-2">
             <AdjustButton value={1} getter={price} setter={setPrice} />
