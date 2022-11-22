@@ -324,8 +324,8 @@ export default function ChargeTrackerIndexPage() {
     <main className="container mx-auto p-4">
       <section className="my-2 grid grid-cols-3 text-lg font-bold">
         <div>{total.count} charges</div>
-        <div>{total.kWh ?? 0}kWh</div>
-        <div>{total.price ?? 0}e</div>
+        <div>{total.kWh ?? 0} kWh</div>
+        <div>{total.price ?? 0} e</div>
       </section>
 
       <section>
