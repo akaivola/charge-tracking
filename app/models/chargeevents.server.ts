@@ -29,7 +29,7 @@ export function getChargeEvents({ userId }: { userId: User['id'] }) {
       },
     },
     orderBy: {
-      date: 'desc'
+      date: 'desc',
     },
   })
 }
@@ -40,12 +40,12 @@ export function getLastDeletedChargeEvent({ userId }: { userId: User['id'] }) {
     where: {
       userId,
       deletedAt: {
-        not: null
-      }
+        not: null,
+      },
     },
     orderBy: {
-      deletedAt: "desc"
-    }
+      deletedAt: 'desc',
+    },
   })
 }
 

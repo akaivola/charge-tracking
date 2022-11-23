@@ -13,7 +13,7 @@ import {
   createChargeEvent,
   deleteChargeEvent,
   getChargeEvents,
-  updateChargeEvent,
+  updateChargeEvent
 } from '~/models/chargeevents.server'
 import { requireUserId } from '~/session.server'
 import { logger } from '../../logger.server'
@@ -171,10 +171,10 @@ function ChargeEntry(props: ChargeEntryProps) {
         <input type="hidden" name="id" value={event.id?.toString()} readOnly />
       )}
       <div className="grid grid-cols-4">
-        <div className='grid grid-cols-3 col-span-4'>
+        <div className="col-span-4 grid grid-cols-3">
           <div className="grid justify-self-center">
             <div className="grid w-full grid-cols-1">
-              <DateAdjustButton value={-1} getter={date} setter={setDate} />
+              <DateAdjustButton value={1} getter={date} setter={setDate} />
             </div>
             <input
               type="text"
@@ -185,18 +185,18 @@ function ChargeEntry(props: ChargeEntryProps) {
               value={date}
             />
             <div className="grid w-full grid-cols-1">
-              <DateAdjustButton value={1} getter={date} setter={setDate} />
+              <DateAdjustButton value={-1} getter={date} setter={setDate} />
             </div>
           </div>
           <div className="grid justify-self-center">
-            <div className="grid grid-cols-2 mr-2">
+            <div className="mr-2 grid grid-cols-2">
               <AdjustButton
-                value={-1}
+                value={1}
                 getter={kiloWattHours}
                 setter={setKiloWattHours}
               />
               <AdjustButton
-                value={-0.1}
+                value={0.1}
                 getter={kiloWattHours}
                 setter={setKiloWattHours}
               />
@@ -212,14 +212,14 @@ function ChargeEntry(props: ChargeEntryProps) {
               />{' '}
               <span className="select-none">kWh</span>
             </span>
-            <div className="grid grid-cols-2 mr-2">
+            <div className="mr-2 grid grid-cols-2">
               <AdjustButton
-                value={1}
+                value={-1}
                 getter={kiloWattHours}
                 setter={setKiloWattHours}
               />
               <AdjustButton
-                value={0.1}
+                value={-0.1}
                 getter={kiloWattHours}
                 setter={setKiloWattHours}
               />
@@ -227,8 +227,8 @@ function ChargeEntry(props: ChargeEntryProps) {
           </div>
           <div className="grid justify-self-center">
             <div className="grid grid-cols-2">
-              <AdjustButton value={-1} getter={price} setter={setPrice} />
-              <AdjustButton value={-0.1} getter={price} setter={setPrice} />
+              <AdjustButton value={1} getter={price} setter={setPrice} />
+              <AdjustButton value={0.1} getter={price} setter={setPrice} />
             </div>
             <span className="grid grid-cols-2 items-center">
               <input
@@ -242,13 +242,13 @@ function ChargeEntry(props: ChargeEntryProps) {
               <span className="select-none">e</span>
             </span>
             <div className="grid grid-cols-2">
-              <AdjustButton value={1} getter={price} setter={setPrice} />
-              <AdjustButton value={0.1} getter={price} setter={setPrice} />
+              <AdjustButton value={-1} getter={price} setter={setPrice} />
+              <AdjustButton value={-0.1} getter={price} setter={setPrice} />
             </div>
           </div>
         </div>
-        <div className="grid row-start-2 col-span-2 col-start-2 my-4">
-          <div className="dropdown dropdown-down justify-self-center">
+        <div className="col-span-2 col-start-2 row-start-2 my-4 grid">
+          <div className="dropdown-down dropdown justify-self-center">
             <input
               type="hidden"
               value={provider?.name || ''}
@@ -291,7 +291,7 @@ function ChargeEntry(props: ChargeEntryProps) {
           name="_action"
           className="btn btn-accent col-span-2 row-start-4 my-4 justify-self-center rounded"
           readOnly
-          value='restore last'
+          value="restore last"
         />
         {'update' === mode && (
           <input

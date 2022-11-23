@@ -36,4 +36,6 @@ export async function getProviderCounts(userId: User['id']) {
   )
 }
 
-memoize(() => initializeProviders().then(() => console.log('providers initialized')))()
+memoize(() =>
+  initializeProviders().then(() => console.log('providers initialized'))
+)()
