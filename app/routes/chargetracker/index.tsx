@@ -171,82 +171,84 @@ function ChargeEntry(props: ChargeEntryProps) {
         <input type="hidden" name="id" value={event.id?.toString()} readOnly />
       )}
       <div className="grid grid-cols-4">
-        <div className="grid justify-self-center">
-          <div className="grid w-1/2 grid-cols-1">
-            <DateAdjustButton value={-1} getter={date} setter={setDate} />
-          </div>
-          <input
-            type="text"
-            className="bg-black"
-            name="date"
-            size={10}
-            readOnly
-            value={date}
-          />
-          <div className="grid w-1/2 grid-cols-1">
-            <DateAdjustButton value={1} getter={date} setter={setDate} />
-          </div>
-        </div>
-        <div className="grid justify-self-center">
-          <div className="grid grid-cols-2">
-            <AdjustButton
-              value={-1}
-              getter={kiloWattHours}
-              setter={setKiloWattHours}
-            />
-            <AdjustButton
-              value={-0.1}
-              getter={kiloWattHours}
-              setter={setKiloWattHours}
-            />
-          </div>
-          <span className="grid grid-cols-2 items-center">
+        <div className='grid grid-cols-3 col-span-4'>
+          <div className="grid justify-self-center">
+            <div className="grid w-full grid-cols-1">
+              <DateAdjustButton value={-1} getter={date} setter={setDate} />
+            </div>
             <input
               type="text"
-              className="justify-self-center bg-black text-center"
-              name="kiloWattHours"
-              size={6}
-              onChange={(e) => setKiloWattHours(Number(e.target.value))}
-              value={kiloWattHours}
-            />{' '}
-            <span className="select-none">kWh</span>
-          </span>
-          <div className="grid grid-cols-2">
-            <AdjustButton
-              value={1}
-              getter={kiloWattHours}
-              setter={setKiloWattHours}
+              className="bg-black"
+              name="date"
+              size={10}
+              readOnly
+              value={date}
             />
-            <AdjustButton
-              value={0.1}
-              getter={kiloWattHours}
-              setter={setKiloWattHours}
-            />
+            <div className="grid w-full grid-cols-1">
+              <DateAdjustButton value={1} getter={date} setter={setDate} />
+            </div>
+          </div>
+          <div className="grid justify-self-center">
+            <div className="grid grid-cols-2 mr-2">
+              <AdjustButton
+                value={-1}
+                getter={kiloWattHours}
+                setter={setKiloWattHours}
+              />
+              <AdjustButton
+                value={-0.1}
+                getter={kiloWattHours}
+                setter={setKiloWattHours}
+              />
+            </div>
+            <span className="grid grid-cols-2 items-center">
+              <input
+                type="text"
+                className="justify-self-center bg-black text-center"
+                name="kiloWattHours"
+                size={6}
+                onChange={(e) => setKiloWattHours(Number(e.target.value))}
+                value={kiloWattHours}
+              />{' '}
+              <span className="select-none">kWh</span>
+            </span>
+            <div className="grid grid-cols-2 mr-2">
+              <AdjustButton
+                value={1}
+                getter={kiloWattHours}
+                setter={setKiloWattHours}
+              />
+              <AdjustButton
+                value={0.1}
+                getter={kiloWattHours}
+                setter={setKiloWattHours}
+              />
+            </div>
+          </div>
+          <div className="grid justify-self-center">
+            <div className="grid grid-cols-2">
+              <AdjustButton value={-1} getter={price} setter={setPrice} />
+              <AdjustButton value={-0.1} getter={price} setter={setPrice} />
+            </div>
+            <span className="grid grid-cols-2 items-center">
+              <input
+                type="text"
+                className="justify-self-center bg-black text-center"
+                name="pricePerCharge"
+                size={6}
+                onChange={(e) => setPrice(Number(e.target.value))}
+                value={price}
+              />{' '}
+              <span className="select-none">e</span>
+            </span>
+            <div className="grid grid-cols-2">
+              <AdjustButton value={1} getter={price} setter={setPrice} />
+              <AdjustButton value={0.1} getter={price} setter={setPrice} />
+            </div>
           </div>
         </div>
-        <div className="grid justify-self-center">
-          <div className="grid grid-cols-2">
-            <AdjustButton value={-1} getter={price} setter={setPrice} />
-            <AdjustButton value={-0.1} getter={price} setter={setPrice} />
-          </div>
-          <span className="grid grid-cols-2 items-center">
-            <input
-              type="text"
-              className="justify-self-center bg-black text-center"
-              name="pricePerCharge"
-              size={6}
-              onChange={(e) => setPrice(Number(e.target.value))}
-              value={price}
-            />{' '}
-            <span className="select-none">e</span>
-          </span>
-          <div className="grid grid-cols-2">
-            <AdjustButton value={1} getter={price} setter={setPrice} />
-            <AdjustButton value={0.1} getter={price} setter={setPrice} />
-          </div>
-        </div>
-        <div className="grid grid-rows-3">
-          <div className="dropdown dropdown-left row-start-2">
+        <div className="grid row-start-2 col-span-2 col-start-2 my-4">
+          <div className="dropdown dropdown-down justify-self-center">
             <input
               type="hidden"
               value={provider?.name || ''}
@@ -255,7 +257,7 @@ function ChargeEntry(props: ChargeEntryProps) {
             />
             <label
               tabIndex={0}
-              className="btn btn-secondary btn-sm m-1 rounded p-1"
+              className="btn btn-secondary btn-sm m-1 rounded p-2"
             >
               {provider?.name || '???'}
             </label>
@@ -275,19 +277,19 @@ function ChargeEntry(props: ChargeEntryProps) {
           type="button"
           defaultValue="Clear fields"
           onClick={(_) => props.newEvent()}
-          className="btn btn-accent col-span-2 my-4 justify-self-center rounded px-2"
+          className="btn btn-accent col-span-2 my-2 justify-self-center rounded px-2"
         />
         <input
           type="submit"
           name="_action"
-          className="btn btn-accent col-span-2 my-4 justify-self-center rounded"
+          className="btn btn-accent col-span-2 my-2 justify-self-center rounded"
           readOnly
           value={mode}
         />
         <input
           type="submit"
           name="_action"
-          className="btn btn-accent col-span-2 row-start-3 my-4 justify-self-center rounded"
+          className="btn btn-accent col-span-2 row-start-4 my-4 justify-self-center rounded"
           readOnly
           value='restore last'
         />
@@ -295,7 +297,7 @@ function ChargeEntry(props: ChargeEntryProps) {
           <input
             type="submit"
             name="_action"
-            className="btn btn-accent col-span-2 col-start-3 row-start-3 my-4 justify-self-center rounded"
+            className="btn btn-accent col-span-2 col-start-3 row-start-4 my-4 justify-self-center rounded"
             readOnly
             value={'delete'}
           />

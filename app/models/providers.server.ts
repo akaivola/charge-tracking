@@ -15,6 +15,7 @@ const providers = [
   'lidl',
   'ikea',
   'home',
+  'plugit',
   'other',
 ]
 
