@@ -13,7 +13,8 @@ import {
   createChargeEvent,
   deleteChargeEvent,
   getChargeEvents,
-  updateChargeEvent
+  getLastDeletedChargeEvent,
+  updateChargeEvent,
 } from '~/models/chargeevents.server'
 import { requireUserId } from '~/session.server'
 import { logger } from '../../logger.server'
@@ -35,19 +36,28 @@ function parse(dateStr: string) {
   return dayjs.utc(dateStr, 'DD.MM.YYYY')
 }
 
-export async function loader({ request }: LoaderArgs) {
-  const userId = await requireUserId(request)
-  const rawChargeEvents = await getChargeEvents({ userId })
-  const chargeEvents = rawChargeEvents.map((event) => ({
+function toSerializable(
+  event: Awaited<ReturnType<typeof getChargeEvents>>[number]
+) {
+  return {
     ...event,
     id: event.id,
     date: format(event.date),
     kiloWattHours: event.kiloWattHours.toNumber(),
     pricePerCharge: event.pricePerCharge.toNumber(),
     providerFK: event.providerFK,
+  }
+}
+
+export async function loader({ request }: LoaderArgs) {
+  const userId = await requireUserId(request)
+  const rawChargeEvents = await getChargeEvents({ userId })
+  const chargeEvents = rawChargeEvents.map(toSerializable)
+  const providers = (await getProviderCounts(userId)).map((p) => ({
+    name: p.name,
   }))
-  const providers = await getProviderCounts(userId)
-  return typedjson({ chargeEvents, providers })
+  const lastDeleted = await getLastDeletedChargeEvent({ userId })
+  return typedjson({ chargeEvents, providers, lastDeleted })
 }
 
 export async function action({ request }: ActionArgs) {
@@ -145,10 +155,11 @@ interface ChargeEntryProps {
   newEvent: () => void
   providers: Provider[]
   event?: Partial<SerializedChargeEvent>
+  lastDeleted?: SerializedChargeEvent
 }
 
 function ChargeEntry(props: ChargeEntryProps) {
-  const { providers, event } = props
+  const { providers, event, lastDeleted } = props
   const mode = event?.id ? 'update' : 'insert'
 
   const [date, setDate] = useState(event?.date ?? format(new Date()))
@@ -286,13 +297,15 @@ function ChargeEntry(props: ChargeEntryProps) {
           readOnly
           value={mode}
         />
-        <input
-          type="submit"
-          name="_action"
-          className="btn btn-accent col-span-2 row-start-4 my-4 justify-self-center rounded"
-          readOnly
-          value="restore last"
-        />
+        {lastDeleted && (
+          <input
+            type="submit"
+            name="_action"
+            className="btn btn-accent col-span-2 row-start-4 my-4 justify-self-center rounded"
+            readOnly
+            value="restore last"
+          />
+        )}
         {'update' === mode && (
           <input
             type="submit"
@@ -308,7 +321,8 @@ function ChargeEntry(props: ChargeEntryProps) {
 }
 
 export default function ChargeTrackerIndexPage() {
-  const { chargeEvents, providers } = useTypedLoaderData<typeof loader>()
+  const { chargeEvents, providers, lastDeleted } =
+    useTypedLoaderData<typeof loader>()
   const [event, setEvent] = useState({} as SerializedChargeEvent)
 
   const total = chargeEvents.reduce(
@@ -335,6 +349,7 @@ export default function ChargeTrackerIndexPage() {
           <ChargeEntry
             event={event}
             providers={providers}
+            lastDeleted={lastDeleted}
             newEvent={() => setEvent({} as SerializedChargeEvent)}
           />
         </div>
