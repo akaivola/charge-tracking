@@ -1,10 +1,6 @@
 import { Prisma } from '@prisma/client'
 import type { ActionArgs, LoaderArgs, MetaFunction } from '@remix-run/node'
 import { Form } from '@remix-run/react'
-import type { Dayjs } from 'dayjs'
-import dayjs from 'dayjs'
-import customParseFormat from 'dayjs/plugin/customParseFormat'
-import utc from 'dayjs/plugin/utc'
 import _ from 'lodash'
 import type { SyntheticEvent } from 'react'
 import React, { useState } from 'react'
@@ -14,50 +10,32 @@ import {
   deleteChargeEvent,
   getChargeEvents,
   getLastDeletedChargeEvent,
+  toSerializable,
   updateChargeEvent,
 } from '~/models/chargeevents.server'
 import { requireUserId } from '~/session.server'
 import { logger } from '../../logger.server'
 import type { Provider } from '../../models/providers.server'
 import { getProviderCounts } from '../../models/providers.server'
+import { format, formatDay, parse } from '../../utils'
 
-dayjs.extend(customParseFormat)
-dayjs.extend(utc)
-
-function formatDay(dayjs: Dayjs) {
-  return dayjs.format('DD.MM.YYYY')
-}
-
-function format(date: Date) {
-  return dayjs.utc(date).format('DD.MM.YYYY')
-}
-
-function parse(dateStr: string) {
-  return dayjs.utc(dateStr, 'DD.MM.YYYY')
-}
-
-function toSerializable(
-  event: Awaited<ReturnType<typeof getChargeEvents>>[number]
-) {
-  return {
-    ...event,
-    id: event.id,
-    date: format(event.date),
-    kiloWattHours: event.kiloWattHours.toNumber(),
-    pricePerCharge: event.pricePerCharge.toNumber(),
-    providerFK: event.providerFK,
-  }
-}
+type PromiseLoader = Awaited<ReturnType<typeof loader>>['typedjson']
+type Loader = Awaited<ReturnType<PromiseLoader>>
+type SerializedChargeEvent = Loader['chargeEvents'][number]
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await requireUserId(request)
   const rawChargeEvents = await getChargeEvents({ userId })
-  const chargeEvents = rawChargeEvents.map(toSerializable)
+  const chargeEvents = rawChargeEvents
   const providers = (await getProviderCounts(userId)).map((p) => ({
     name: p.name,
   }))
   const lastDeleted = await getLastDeletedChargeEvent({ userId })
-  return typedjson({ chargeEvents, providers, lastDeleted })
+  return typedjson({
+    chargeEvents: chargeEvents.map(toSerializable),
+    providers,
+    lastDeleted: lastDeleted ? toSerializable(lastDeleted) : null,
+  })
 }
 
 export async function action({ request }: ActionArgs) {
@@ -147,15 +125,11 @@ function DateAdjustButton(props: {
   )
 }
 
-type PromiseLoader = Awaited<ReturnType<typeof loader>>['typedjson']
-type Loader = Awaited<ReturnType<PromiseLoader>>
-type SerializedChargeEvent = Loader['chargeEvents'][number]
-
 interface ChargeEntryProps {
   newEvent: () => void
   providers: Provider[]
   event?: Partial<SerializedChargeEvent>
-  lastDeleted?: SerializedChargeEvent
+  lastDeleted: SerializedChargeEvent | null
 }
 
 function ChargeEntry(props: ChargeEntryProps) {
