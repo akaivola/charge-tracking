@@ -13,6 +13,8 @@ const DEFAULT_REDIRECT = '/'
 dayjs.extend(customParseFormat)
 dayjs.extend(utc)
 
+export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>
+
 /**
  * This should be used any time the redirect path is user-provided
  * (Like the query string on our login/signup pages). This avoids

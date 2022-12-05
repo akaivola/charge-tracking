@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client'
 import type { ActionArgs, LoaderArgs, MetaFunction } from '@remix-run/node'
 import { Form } from '@remix-run/react'
-import _ from 'lodash'
+import _, { last } from 'lodash'
 import type { SyntheticEvent } from 'react'
 import React, { useState } from 'react'
 import { typedjson, useTypedLoaderData } from 'remix-typedjson'
@@ -80,6 +80,24 @@ export async function action({ request }: ActionArgs) {
       id: BigInt(values.id.toString()),
     })
     return typedjson({ result })
+  }
+
+  if ('restore last' === _action) {
+    const lastDeleted = await getLastDeletedChargeEvent({ userId })
+    if (lastDeleted) {
+      const { date, kiloWattHours, pricePerCharge, id, userId, providerFK } =
+        lastDeleted
+      const updated = updateChargeEvent({
+        id,
+        userId,
+        date,
+        kiloWattHours,
+        pricePerCharge,
+        deletedAt: null,
+        provider: providerFK.name,
+      })
+      return typedjson({ updated })
+    } else return typedjson({ error: 'unable to restore last deleted' })
   }
 
   return typedjson({ error: 'unknown action' })

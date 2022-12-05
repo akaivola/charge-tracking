@@ -1,11 +1,9 @@
-import type {
-  ChargeEvent, Provider,
-  User
-} from '@prisma/client'
+import type { ChargeEvent, Provider, User } from '@prisma/client'
 import _ from 'lodash'
 import invariant from 'tiny-invariant'
 
 import { prisma } from '~/db.server'
+import type { Optional } from '../utils'
 import { format } from '../utils'
 
 export type { ChargeEvent } from '@prisma/client'
@@ -88,7 +86,10 @@ export function createChargeEvent(
 }
 
 export async function updateChargeEvent(
-  chargeEvent: Omit<ChargeEvent, 'createdAt' | 'updatedAt' | 'deletedAt'>
+  chargeEvent: Optional<
+    Omit<ChargeEvent, 'createdAt' | 'updatedAt'>,
+    'deletedAt'
+  >
 ) {
   // updatedAt could be used as an optimistic lock
   invariant(chargeEvent.userId, 'userId cannot be missing')
