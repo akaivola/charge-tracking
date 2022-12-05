@@ -1,11 +1,7 @@
 import { Prisma } from '@prisma/client'
 import type { ActionArgs, LoaderArgs, MetaFunction } from '@remix-run/node'
 import { Form } from '@remix-run/react'
-import type { Dayjs } from 'dayjs'
-import dayjs from 'dayjs'
-import customParseFormat from 'dayjs/plugin/customParseFormat'
-import utc from 'dayjs/plugin/utc'
-import _ from 'lodash'
+import _, { last } from 'lodash'
 import type { SyntheticEvent } from 'react'
 import React, { useState } from 'react'
 import { typedjson, useTypedLoaderData } from 'remix-typedjson'
@@ -13,41 +9,33 @@ import {
   createChargeEvent,
   deleteChargeEvent,
   getChargeEvents,
-  updateChargeEvent
+  getLastDeletedChargeEvent,
+  toSerializable,
+  updateChargeEvent,
 } from '~/models/chargeevents.server'
 import { requireUserId } from '~/session.server'
 import { logger } from '../../logger.server'
 import type { Provider } from '../../models/providers.server'
 import { getProviderCounts } from '../../models/providers.server'
+import { format, formatDay, parse } from '../../utils'
 
-dayjs.extend(customParseFormat)
-dayjs.extend(utc)
-
-function formatDay(dayjs: Dayjs) {
-  return dayjs.format('DD.MM.YYYY')
-}
-
-function format(date: Date) {
-  return dayjs.utc(date).format('DD.MM.YYYY')
-}
-
-function parse(dateStr: string) {
-  return dayjs.utc(dateStr, 'DD.MM.YYYY')
-}
+type PromiseLoader = Awaited<ReturnType<typeof loader>>['typedjson']
+type Loader = Awaited<ReturnType<PromiseLoader>>
+type SerializedChargeEvent = Loader['chargeEvents'][number]
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await requireUserId(request)
   const rawChargeEvents = await getChargeEvents({ userId })
-  const chargeEvents = rawChargeEvents.map((event) => ({
-    ...event,
-    id: event.id,
-    date: format(event.date),
-    kiloWattHours: event.kiloWattHours.toNumber(),
-    pricePerCharge: event.pricePerCharge.toNumber(),
-    providerFK: event.providerFK,
+  const chargeEvents = rawChargeEvents
+  const providers = (await getProviderCounts(userId)).map((p) => ({
+    name: p.name,
   }))
-  const providers = await getProviderCounts(userId)
-  return typedjson({ chargeEvents, providers })
+  const lastDeleted = await getLastDeletedChargeEvent({ userId })
+  return typedjson({
+    chargeEvents: chargeEvents.map(toSerializable),
+    providers,
+    lastDeleted: lastDeleted ? toSerializable(lastDeleted) : null,
+  })
 }
 
 export async function action({ request }: ActionArgs) {
@@ -94,6 +82,24 @@ export async function action({ request }: ActionArgs) {
     return typedjson({ result })
   }
 
+  if ('restore last' === _action) {
+    const lastDeleted = await getLastDeletedChargeEvent({ userId })
+    if (lastDeleted) {
+      const { date, kiloWattHours, pricePerCharge, id, userId, providerFK } =
+        lastDeleted
+      const updated = updateChargeEvent({
+        id,
+        userId,
+        date,
+        kiloWattHours,
+        pricePerCharge,
+        deletedAt: null,
+        provider: providerFK.name,
+      })
+      return typedjson({ updated })
+    } else return typedjson({ error: 'unable to restore last deleted' })
+  }
+
   return typedjson({ error: 'unknown action' })
 }
 
@@ -137,18 +143,15 @@ function DateAdjustButton(props: {
   )
 }
 
-type PromiseLoader = Awaited<ReturnType<typeof loader>>['typedjson']
-type Loader = Awaited<ReturnType<PromiseLoader>>
-type SerializedChargeEvent = Loader['chargeEvents'][number]
-
 interface ChargeEntryProps {
   newEvent: () => void
   providers: Provider[]
   event?: Partial<SerializedChargeEvent>
+  lastDeleted: SerializedChargeEvent | null
 }
 
 function ChargeEntry(props: ChargeEntryProps) {
-  const { providers, event } = props
+  const { providers, event, lastDeleted } = props
   const mode = event?.id ? 'update' : 'insert'
 
   const [date, setDate] = useState(event?.date ?? format(new Date()))
@@ -286,13 +289,15 @@ function ChargeEntry(props: ChargeEntryProps) {
           readOnly
           value={mode}
         />
-        <input
-          type="submit"
-          name="_action"
-          className="btn btn-accent col-span-2 row-start-4 my-4 justify-self-center rounded"
-          readOnly
-          value="restore last"
-        />
+        {lastDeleted && (
+          <input
+            type="submit"
+            name="_action"
+            className="btn btn-accent col-span-2 row-start-4 my-4 justify-self-center rounded"
+            readOnly
+            value="restore last"
+          />
+        )}
         {'update' === mode && (
           <input
             type="submit"
@@ -308,7 +313,8 @@ function ChargeEntry(props: ChargeEntryProps) {
 }
 
 export default function ChargeTrackerIndexPage() {
-  const { chargeEvents, providers } = useTypedLoaderData<typeof loader>()
+  const { chargeEvents, providers, lastDeleted } =
+    useTypedLoaderData<typeof loader>()
   const [event, setEvent] = useState({} as SerializedChargeEvent)
 
   const total = chargeEvents.reduce(
@@ -335,6 +341,7 @@ export default function ChargeTrackerIndexPage() {
           <ChargeEntry
             event={event}
             providers={providers}
+            lastDeleted={lastDeleted}
             newEvent={() => setEvent({} as SerializedChargeEvent)}
           />
         </div>

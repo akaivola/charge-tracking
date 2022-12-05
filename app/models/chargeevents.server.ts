@@ -1,8 +1,10 @@
-import type { ChargeEvent, User } from '@prisma/client'
+import type { ChargeEvent, Provider, User } from '@prisma/client'
 import _ from 'lodash'
 import invariant from 'tiny-invariant'
 
 import { prisma } from '~/db.server'
+import type { Optional } from '../utils'
+import { format } from '../utils'
 
 export type { ChargeEvent } from '@prisma/client'
 
@@ -19,7 +21,29 @@ const chargeEventSelect = {
   },
 }
 
-export function getChargeEvents({ userId }: { userId: User['id'] }) {
+type FK = { providerFK: Provider }
+type ChargeEventSelect = Exclude<keyof typeof chargeEventSelect, keyof FK>
+export type SerializableChargeEvent = Required<
+  Pick<Partial<ChargeEvent>, ChargeEventSelect>
+> &
+  FK
+
+export function toSerializable(event: SerializableChargeEvent) {
+  return {
+    ...event,
+    id: event.id,
+    date: format(event.date),
+    kiloWattHours: event.kiloWattHours.toNumber(),
+    pricePerCharge: event.pricePerCharge.toNumber(),
+    providerFK: event.providerFK,
+  }
+}
+
+export async function getChargeEvents({
+  userId,
+}: {
+  userId: User['id']
+}): Promise<SerializableChargeEvent[]> {
   return prisma.chargeEvent.findMany({
     select: chargeEventSelect,
     where: {
@@ -34,7 +58,11 @@ export function getChargeEvents({ userId }: { userId: User['id'] }) {
   })
 }
 
-export function getLastDeletedChargeEvent({ userId }: { userId: User['id'] }) {
+export function getLastDeletedChargeEvent({
+  userId,
+}: {
+  userId: User['id']
+}): Promise<SerializableChargeEvent | null> {
   return prisma.chargeEvent.findFirst({
     select: chargeEventSelect,
     where: {
@@ -58,7 +86,10 @@ export function createChargeEvent(
 }
 
 export async function updateChargeEvent(
-  chargeEvent: Omit<ChargeEvent, 'createdAt' | 'updatedAt' | 'deletedAt'>
+  chargeEvent: Optional<
+    Omit<ChargeEvent, 'createdAt' | 'updatedAt'>,
+    'deletedAt'
+  >
 ) {
   // updatedAt could be used as an optimistic lock
   invariant(chargeEvent.userId, 'userId cannot be missing')

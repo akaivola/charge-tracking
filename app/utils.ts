@@ -1,9 +1,19 @@
+import type { User } from '~/models/user.server'
+import type { Dayjs } from 'dayjs'
+
 import { useMatches } from '@remix-run/react'
 import { useMemo } from 'react'
+import dayjs from 'dayjs'
 
-import type { User } from '~/models/user.server'
+import customParseFormat from 'dayjs/plugin/customParseFormat'
+import utc from 'dayjs/plugin/utc'
 
 const DEFAULT_REDIRECT = '/'
+
+dayjs.extend(customParseFormat)
+dayjs.extend(utc)
+
+export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>
 
 /**
  * This should be used any time the redirect path is user-provided
@@ -68,4 +78,16 @@ export function useUser(): User {
 
 export function validateEmail(email: unknown): email is string {
   return typeof email === 'string' && email.length > 3 && email.includes('@')
+}
+
+export function formatDay(dayjs: Dayjs) {
+  return dayjs.format('DD.MM.YYYY')
+}
+
+export function format(date: Date) {
+  return dayjs.utc(date).format('DD.MM.YYYY')
+}
+
+export function parse(dateStr: string) {
+  return dayjs.utc(dateStr, 'DD.MM.YYYY')
 }
