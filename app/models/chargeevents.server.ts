@@ -51,6 +51,7 @@ export async function getChargeEvents({
     },
     orderBy: {
       date: 'desc',
+      id: 'desc'
     },
   })
 }
