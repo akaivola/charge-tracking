@@ -22,8 +22,8 @@ const chargeEventSelect = {
 }
 
 type FK = { providerFK: Provider }
-type ChargeEventSelect = keyof typeof chargeEventSelect
-export type SerializableChargeEvent = Pick<ChargeEvent, Exclude<ChargeEventSelect, keyof FK>> & FK
+type ChargeEventSelect = Exclude<keyof typeof chargeEventSelect, keyof FK>
+export type SerializableChargeEvent = Pick<ChargeEvent, ChargeEventSelect> & FK
 
 export function toSerializable(event: SerializableChargeEvent) {
   return {
