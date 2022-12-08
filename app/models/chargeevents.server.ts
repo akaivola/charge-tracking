@@ -49,10 +49,12 @@ export async function getChargeEvents({
         equals: null,
       },
     },
-    orderBy: {
-      date: 'desc',
-      id: 'desc'
-    },
+    orderBy: [
+      {
+        date: 'desc',
+      },
+      { id: 'desc' },
+    ],
   })
 }
 

@@ -18,10 +18,11 @@ import { logger } from '../../logger.server'
 import type { Provider } from '../../models/providers.server'
 import { getProviderCounts } from '../../models/providers.server'
 import { format, formatDay, parse } from '../../utils'
+import { Stats } from './stats'
 
 type PromiseLoader = Awaited<ReturnType<typeof loader>>['typedjson']
 type Loader = Awaited<ReturnType<PromiseLoader>>
-type SerializedChargeEvent = Loader['chargeEvents'][number]
+export type SerializedChargeEvent = Loader['chargeEvents'][number]
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await requireUserId(request)
@@ -50,7 +51,7 @@ export async function action({ request }: ActionArgs) {
     const parsedDate = parse(date.toString())
     const result = await createChargeEvent({
       userId,
-      date: parsedDate.toDate(),
+      date: parsedDate!.toDate(),
       kiloWattHours: new Prisma.Decimal(kiloWattHours.toString()),
       pricePerCharge: new Prisma.Decimal(pricePerCharge.toString()),
       provider: provider.toString(),
@@ -64,7 +65,7 @@ export async function action({ request }: ActionArgs) {
     const result = await updateChargeEvent({
       userId,
       id: BigInt(values.id.toString()),
-      date: parsedDate.toDate(),
+      date: parsedDate!.toDate(),
       kiloWattHours: new Prisma.Decimal(kiloWattHours.toString()),
       pricePerCharge: new Prisma.Decimal(pricePerCharge.toString()),
       provider: provider.toString(),
@@ -128,10 +129,10 @@ function AdjustButton(props: {
 function DateAdjustButton(props: {
   value: number
   getter: string
-  setter: (newValue: string) => unknown
+  setter: (newValue: string | undefined) => unknown
 }) {
   const oldDate = parse(props.getter)
-  const newDate = oldDate.add(props.value, 'day')
+  const newDate = oldDate?.add(props.value, 'day')
   const onClick = (_e: SyntheticEvent) => props.setter(formatDay(newDate))
   return (
     <input
@@ -177,7 +178,7 @@ function ChargeEntry(props: ChargeEntryProps) {
         <div className="col-span-4 grid grid-cols-3">
           <div className="grid justify-self-center">
             <div className="grid w-full grid-cols-1">
-              <DateAdjustButton value={1} getter={date} setter={setDate} />
+              <DateAdjustButton value={1} getter={date} setter={(newDate) => setDate(newDate ?? format(new Date()))} />
             </div>
             <input
               type="text"
@@ -188,7 +189,7 @@ function ChargeEntry(props: ChargeEntryProps) {
               value={date}
             />
             <div className="grid w-full grid-cols-1">
-              <DateAdjustButton value={-1} getter={date} setter={setDate} />
+              <DateAdjustButton value={-1} getter={date} setter={(newDate) => setDate(newDate ?? format(new Date()))} />
             </div>
           </div>
           <div className="grid justify-self-center">
@@ -317,24 +318,9 @@ export default function ChargeTrackerIndexPage() {
     useTypedLoaderData<typeof loader>()
   const [event, setEvent] = useState({} as SerializedChargeEvent)
 
-  const total = chargeEvents.reduce(
-    ({ kWh, price, count }, ce) => {
-      return {
-        kWh: _.round(kWh + ce.kiloWattHours, 2),
-        price: _.round(price + ce.pricePerCharge, 2),
-        count: count + 1,
-      }
-    },
-    { kWh: 0, price: 0, count: 0 }
-  )
-
   return (
     <main className="container mx-auto p-4">
-      <section className="my-2 grid grid-cols-3 text-lg font-bold">
-        <div>{total.count} charges</div>
-        <div>{total.kWh ?? 0} kWh</div>
-        <div>{total.price ?? 0} e</div>
-      </section>
+      <Stats chargeEvents={chargeEvents} />
 
       <section>
         <div>
