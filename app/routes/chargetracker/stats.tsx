@@ -6,7 +6,6 @@ export interface StatsProps {
   chargeEvents: SerializedChargeEvent[] 
 }
 
-
 export function Stats({ chargeEvents }: StatsProps) {
   const total = chargeEvents.reduce(
     (acc, ce) => {
@@ -28,12 +27,12 @@ export function Stats({ chargeEvents }: StatsProps) {
         <div className='stat place-items-center'>
           <div className='stat-title text-secondary'>Total Charges</div>
           <div className='stat-value text-secondary'>{count}</div>
-          <div className='stat-desc text-secondary'>{ first && last ? `${formatShort(first)} - ${formatShort(last)}` : '' }</div>
+          <div className='stat-desc text-secondary'>{ first && last ? `${formatShort(last)} - ${formatShort(first)}` : '' }</div>
         </div>
         <div className='stat place-items-center'>
           <div className='stat-title text-secondary'>Total kWh</div>
           <div className='stat-value text-secondary'>{kWh}</div>
-          <div className='stat-desc text-secondary'>{ first && last ? `${formatShort(first)} - ${formatShort(last)}` : '' }</div>
+          <div className='stat-desc text-secondary'>{ first && last ? `${formatShort(last)} - ${formatShort(first)}` : '' }</div>
         </div>
         <div className='stat place-items-center'>
           <div className='stat-title text-secondary'>Total Price</div>
@@ -42,7 +41,7 @@ export function Stats({ chargeEvents }: StatsProps) {
         </div>
         <div className='stat place-items-center'>
           <div className='stat-title text-secondary'>Price</div>
-          <div className='stat-value text-secondary'>{ _.round(price/kWh, 2) }</div>
+          <div className='stat-value text-secondary'>{ _.round(price / kWh * 100, 1) }</div>
           <div className='stat-desc text-secondary'>c/kWh</div>
         </div>
       </div>
