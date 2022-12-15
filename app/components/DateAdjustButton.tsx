@@ -1,5 +1,5 @@
-import type { SyntheticEvent } from "react"
-import { formatDay, parse } from "../utils"
+import type { SyntheticEvent } from 'react'
+import { formatDay, parse } from '../utils'
 
 export default function DateAdjustButton(props: {
   value: number

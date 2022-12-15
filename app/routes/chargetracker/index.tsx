@@ -9,9 +9,10 @@ import {
   getChargeEvents,
   getLastDeletedChargeEvent,
   toSerializable,
-  updateChargeEvent
+  updateChargeEvent,
 } from '~/models/chargeevents.server'
 import { requireUserId } from '~/session.server'
+import Calculator from '../../components/Calculator'
 import ChargeEntry from '../../components/chargetracker/ChargeEntry'
 import { Stats } from '../../components/chargetracker/stats'
 import { logger } from '../../logger.server'
@@ -110,61 +111,88 @@ export const meta: MetaFunction = () => {
 
 type Tab = 'info' | 'calculator'
 
+function isTabActive(tab: string, currentTab: Tab) {
+  return tab === currentTab ? 'active' : ''
+}
+
 export default function ChargeTrackerIndexPage() {
   const { chargeEvents, providers, lastDeleted } =
     useTypedLoaderData<typeof loader>()
   const [event, setEvent] = useState({} as SerializedChargeEvent)
-  const [tab, setTab] = useState('info' as Tab)
+  const [tab, setTab] = useState('calculator' as Tab)
 
   return (
-    <main className="container bg-black mx-auto p-4">
+    <main className="container mx-auto bg-black p-4">
       <Stats chargeEvents={chargeEvents} />
 
-      <section>
-        <div>
-          <ChargeEntry
-            event={event}
-            providers={providers}
-            lastDeleted={lastDeleted}
-            newEvent={() => setEvent({} as SerializedChargeEvent)}
-          />
-        </div>
-        <section className="md:text-md grid grid-cols-12 gap-x-6">
-          <div className="col-span-3">Date</div>
-          <div className="col-span-2 text-right">kWh</div>
-          <div className="col-span-2 text-right">e/ charge</div>
-          <div className="col-span-2 text-right">e * kWh</div>
-          <div className="col-span-3">Provider</div>
-          {chargeEvents.map((anEvent) => {
-            const { id, date, kiloWattHours, pricePerCharge, providerFK } =
-              anEvent
-            const isSelected = event && event.id === id
-            return (
-              <div
-                key={id.toString()}
-                className={`col-span-full grid cursor-pointer grid-cols-12 gap-x-6 py-2 text-xs md:text-base ${
-                  isSelected ? 'text-warning' : ''
-                }`}
-                onClick={() => setEvent(anEvent)}
-              >
-                <div className="col-span-3">{date}</div>
-                <div className="col-span-2 text-right">{kiloWattHours}</div>
-                <div className="col-span-2 text-right">{pricePerCharge}</div>
-                <div className="col-span-2 text-right">
-                  {_.round(pricePerCharge / kiloWattHours, 2)}
+      {tab === 'info' && (
+        <section>
+          <div>
+            <ChargeEntry
+              event={event}
+              providers={providers}
+              lastDeleted={lastDeleted}
+              newEvent={() => setEvent({} as SerializedChargeEvent)}
+            />
+          </div>
+          <section className="md:text-md grid grid-cols-12 gap-x-6">
+            <div className="col-span-3">Date</div>
+            <div className="col-span-2 text-right">kWh</div>
+            <div className="col-span-2 text-right">e/ charge</div>
+            <div className="col-span-2 text-right">e * kWh</div>
+            <div className="col-span-3">Provider</div>
+            {chargeEvents.map((anEvent) => {
+              const { id, date, kiloWattHours, pricePerCharge, providerFK } =
+                anEvent
+              const isSelected = event && event.id === id
+              return (
+                <div
+                  key={id.toString()}
+                  className={`col-span-full grid cursor-pointer grid-cols-12 gap-x-6 py-2 text-xs md:text-base ${
+                    isSelected ? 'text-warning' : ''
+                  }`}
+                  onClick={() => setEvent(anEvent)}
+                >
+                  <div className="col-span-3">{date}</div>
+                  <div className="col-span-2 text-right">{kiloWattHours}</div>
+                  <div className="col-span-2 text-right">{pricePerCharge}</div>
+                  <div className="col-span-2 text-right">
+                    {_.round(pricePerCharge / kiloWattHours, 2)}
+                  </div>
+                  <div className="col-span-3">{providerFK.name}</div>
                 </div>
-                <div className="col-span-3">{providerFK.name}</div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </section>
         </section>
-      </section>
+      )}
+
+      {tab === 'calculator' && <Calculator />}
 
       <div className="btm-nav">
-        <button className="text-secondary active">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <button
+          className={`text-secondary ${isTabActive('info', tab)}`}
+          onClick={() => setTab('info')}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
         </button>
-        <button className="text-secondary">
+        <button
+          className={`text-secondary ${isTabActive('calculator', tab)}`}
+          onClick={() => setTab('calculator')}
+        >
           calculator
         </button>
       </div>

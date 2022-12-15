@@ -1,9 +1,9 @@
-import type { SyntheticEvent } from "react"
+import type { SyntheticEvent } from 'react'
 
 export default function AdjustButton(props: {
   value: number
   getter: number
-  setter: (newValue: number) => void 
+  setter: (newValue: number) => void
 }) {
   const onClick = (_e: SyntheticEvent) =>
     props.setter(Math.max(0, _.round(props.getter + props.value, 2)))

@@ -1,11 +1,11 @@
-import { Form } from "@remix-run/react"
-import _ from "lodash"
-import React, { useState } from "react"
-import type { Provider } from "../../models/providers.server"
-import type { SerializedChargeEvent } from "../../routes/chargetracker"
-import { format } from "../../utils"
-import AdjustButton from "../AdjustButton"
-import DateAdjustButton from "../DateAdjustButton"
+import { Form } from '@remix-run/react'
+import _ from 'lodash'
+import React, { useState } from 'react'
+import type { Provider } from '../../models/providers.server'
+import type { SerializedChargeEvent } from '../../routes/chargetracker'
+import { format } from '../../utils'
+import AdjustButton from '../AdjustButton'
+import DateAdjustButton from '../DateAdjustButton'
 
 export interface ChargeEntryProps {
   newEvent: () => void
@@ -41,7 +41,11 @@ export default function ChargeEntry(props: ChargeEntryProps) {
         <div className="col-span-4 grid grid-cols-3">
           <div className="grid justify-self-center">
             <div className="grid w-full grid-cols-1">
-              <DateAdjustButton value={1} getter={date} setter={(newDate) => setDate(newDate ?? format(new Date()))} />
+              <DateAdjustButton
+                value={1}
+                getter={date}
+                setter={(newDate) => setDate(newDate ?? format(new Date()))}
+              />
             </div>
             <input
               type="text"
@@ -52,7 +56,11 @@ export default function ChargeEntry(props: ChargeEntryProps) {
               value={date}
             />
             <div className="grid w-full grid-cols-1">
-              <DateAdjustButton value={-1} getter={date} setter={(newDate) => setDate(newDate ?? format(new Date()))} />
+              <DateAdjustButton
+                value={-1}
+                getter={date}
+                setter={(newDate) => setDate(newDate ?? format(new Date()))}
+              />
             </div>
           </div>
           <div className="grid justify-self-center">
