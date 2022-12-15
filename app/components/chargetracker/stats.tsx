@@ -1,5 +1,5 @@
 import _ from "lodash"
-import type { SerializedChargeEvent } from "."
+import type { SerializedChargeEvent } from "../../routes/chargetracker"
 import { formatShort, parse } from "../../utils"
 
 export interface StatsProps {
