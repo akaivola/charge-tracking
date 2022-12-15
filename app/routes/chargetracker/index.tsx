@@ -108,13 +108,16 @@ export const meta: MetaFunction = () => {
   }
 }
 
+type Tab = 'info' | 'calculator'
+
 export default function ChargeTrackerIndexPage() {
   const { chargeEvents, providers, lastDeleted } =
     useTypedLoaderData<typeof loader>()
   const [event, setEvent] = useState({} as SerializedChargeEvent)
+  const [tab, setTab] = useState('info' as Tab)
 
   return (
-    <main className="container mx-auto p-4">
+    <main className="container bg-black mx-auto p-4">
       <Stats chargeEvents={chargeEvents} />
 
       <section>
