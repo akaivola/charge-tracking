@@ -106,6 +106,7 @@ export async function action({ request }: ActionArgs) {
 export const meta: MetaFunction = () => {
   return {
     title: 'Charge Tracking',
+    viewport: 'initial-scale=1,viewport-fit=cover'
   }
 }
 

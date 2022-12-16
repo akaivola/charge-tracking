@@ -21,13 +21,20 @@ export default function Calculator() {
   const requiredTimeToChargeHours = requiredKWhToCharge / chargeRate
   const requiredTimeToChargeMinutes = requiredTimeToChargeHours * 60
 
+  const rangeAfterCharge = (availableKwh + requiredKWhToCharge) / consumptionWhPerKm * 1000
+
   return (
     <section>
       <section className="grid grid-cols-2 gap-2">
         <div className="stats shadow stats-vertical">
           <div className="stat place-items-center">
-            <div className="stat-title text-secondary">Range</div>
+            <div className="stat-title text-secondary">Range Current</div>
             <div className="stat-value text-secondary">{_.round(range, 0)}</div>
+            <div className="stat-desc text-secondary">km</div>
+          </div>
+          <div className="stat place-items-center">
+            <div className="stat-title text-secondary">Range Charged</div>
+            <div className="stat-value text-secondary">{_.round(rangeAfterCharge, 0)}</div>
             <div className="stat-desc text-secondary">km</div>
           </div>
           <div className="stat place-items-center">
@@ -62,32 +69,6 @@ export default function Calculator() {
       <section className="divider"></section>
 
       <section className="md:text-md grid md:grid-cols-3 grid-cols-2 gap-6">
-        <div>
-          <div>Battery Size kWh</div>
-          <div>
-            <input
-              className="input"
-              type="text"
-              value={batterySize}
-              size={3}
-              onChange={(e) => setBatterySize(toNumber(e.target.value))}
-            ></input>
-          </div>
-        </div>
-        <div>
-          <div>Capacity Degradation %</div>
-          <div>
-            <input
-              className="range range-primary"
-              type="range"
-              min="0"
-              max="10"
-              value={degradationPercent}
-              onChange={(e) => setDegradationPercent(toNumber(e.target.value))}
-            ></input>
-          </div>
-          <div>{degradationPercent}</div>
-        </div>
         <div>
           <div>Consumption (Wh/km)</div>
           <div>
@@ -143,6 +124,32 @@ export default function Calculator() {
             ></input>
           </div>
           <div>{chargeToSoC}</div>
+        </div>
+        <div>
+          <div>Battery Size kWh</div>
+          <div>
+            <input
+              className="input"
+              type="text"
+              value={batterySize}
+              size={3}
+              onChange={(e) => setBatterySize(toNumber(e.target.value))}
+            ></input>
+          </div>
+        </div>
+        <div>
+          <div>Capacity Degradation %</div>
+          <div>
+            <input
+              className="range range-primary"
+              type="range"
+              min="0"
+              max="10"
+              value={degradationPercent}
+              onChange={(e) => setDegradationPercent(toNumber(e.target.value))}
+            ></input>
+          </div>
+          <div>{degradationPercent}</div>
         </div>
       </section>
     </section>
