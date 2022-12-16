@@ -23,13 +23,25 @@ export default function Calculator() {
 
   return (
     <section>
-      <section>
-        <div className="stats shadow">
+      <section className="grid grid-cols-2 gap-2">
+        <div className="stats shadow stats-vertical">
           <div className="stat place-items-center">
             <div className="stat-title text-secondary">Range</div>
             <div className="stat-value text-secondary">{_.round(range, 0)}</div>
             <div className="stat-desc text-secondary">km</div>
           </div>
+          <div className="stat place-items-center">
+            <div className="stat-title text-secondary">Required Time</div>
+            <div className="stat-value text-secondary">
+              {_.round(requiredTimeToChargeHours, 1)} h
+            </div>
+            <div className="stat-desc text-secondary">
+              {_.round(requiredTimeToChargeMinutes, 0)} min
+            </div>
+          </div>
+        </div>
+
+        <div className="stats shadow stats-vertical">
           <div className="stat place-items-center">
             <div className="stat-title text-secondary">Available</div>
             <div className="stat-value text-secondary">
@@ -44,32 +56,54 @@ export default function Calculator() {
             </div>
             <div className="stat-desc text-secondary">kWh</div>
           </div>
-          <div className="stat place-items-center">
-            <div className="stat-title text-secondary">Required Time</div>
-            <div className="stat-value text-secondary">
-              {_.round(requiredTimeToChargeHours, 1)}h
-            </div>
-            <div className="stat-desc text-secondary">
-              {_.round(requiredTimeToChargeMinutes, 0)}min
-            </div>
-          </div>
         </div>
       </section>
 
-      <section className="md:text-md grid grid-cols-3 gap-x-6">
+      <section className="divider"></section>
+
+      <section className="md:text-md grid md:grid-cols-3 grid-cols-2 gap-6">
         <div>
-          <div>Battery Size</div>
+          <div>Battery Size kWh</div>
           <div>
             <input
               className="input"
               type="text"
               value={batterySize}
+              size={3}
               onChange={(e) => setBatterySize(toNumber(e.target.value))}
             ></input>
           </div>
         </div>
         <div>
-          <div>State of Charge</div>
+          <div>Capacity Degradation %</div>
+          <div>
+            <input
+              className="range range-primary"
+              type="range"
+              min="0"
+              max="10"
+              value={degradationPercent}
+              onChange={(e) => setDegradationPercent(toNumber(e.target.value))}
+            ></input>
+          </div>
+          <div>{degradationPercent}</div>
+        </div>
+        <div>
+          <div>Consumption (Wh/km)</div>
+          <div>
+            <input
+              className="range range-primary"
+              type="range"
+              min="50"
+              max="300"
+              value={consumptionWhPerKm}
+              onChange={(e) => setConsumptionWhPerKm(toNumber(e.target.value))}
+            ></input>
+          </div>
+          <div>{consumptionWhPerKm}</div>
+        </div>
+        <div>
+          <div>State of Charge %</div>
           <div>
             <input
               className="range range-primary"
@@ -97,18 +131,18 @@ export default function Calculator() {
           <div>{chargeRate}</div>
         </div>
         <div>
-          <div>Consumption (Wh/km)</div>
+          <div>Charge to SoC %</div>
           <div>
             <input
               className="range range-primary"
               type="range"
-              min="50"
-              max="300"
-              value={consumptionWhPerKm}
-              onChange={(e) => setConsumptionWhPerKm(toNumber(e.target.value))}
+              min="0"
+              max="100"
+              value={chargeToSoC}
+              onChange={(e) => setChargeToSoC(toNumber(e.target.value))}
             ></input>
           </div>
-          <div>{consumptionWhPerKm}</div>
+          <div>{chargeToSoC}</div>
         </div>
       </section>
     </section>

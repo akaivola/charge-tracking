@@ -123,10 +123,9 @@ export default function ChargeTrackerIndexPage() {
 
   return (
     <main className="container mx-auto bg-black p-4">
-      <Stats chargeEvents={chargeEvents} />
-
       {tab === 'info' && (
         <section>
+          <Stats chargeEvents={chargeEvents} />
           <div>
             <ChargeEntry
               event={event}
