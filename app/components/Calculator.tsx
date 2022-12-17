@@ -24,20 +24,20 @@ export default function Calculator() {
   const rangeAfterCharge = (availableKwh + requiredKWhToCharge) / consumptionWhPerKm * 1000
 
   return (
-    <section>
+    <section className='pb-20'>
       <section className="grid grid-cols-2 gap-2">
         <div className="stats shadow stats-vertical">
-          <div className="stat place-items-center">
+          <div className="stat place-items-center p-0.5">
             <div className="stat-title text-secondary">Range Current</div>
             <div className="stat-value text-secondary">{_.round(range, 0)}</div>
             <div className="stat-desc text-secondary">km</div>
           </div>
-          <div className="stat place-items-center">
+          <div className="stat place-items-center p-0.5">
             <div className="stat-title text-secondary">Range Charged</div>
             <div className="stat-value text-secondary">{_.round(rangeAfterCharge, 0)}</div>
             <div className="stat-desc text-secondary">km</div>
           </div>
-          <div className="stat place-items-center">
+          <div className="stat place-items-center p-0.5">
             <div className="stat-title text-secondary">Required Time</div>
             <div className="stat-value text-secondary">
               {_.round(requiredTimeToChargeHours, 1)} h
@@ -49,14 +49,14 @@ export default function Calculator() {
         </div>
 
         <div className="stats shadow stats-vertical">
-          <div className="stat place-items-center">
+          <div className="stat place-items-center p-0.5">
             <div className="stat-title text-secondary">Available</div>
             <div className="stat-value text-secondary">
               {_.round(availableKwh, 1)}
             </div>
             <div className="stat-desc text-secondary">kWh</div>
           </div>
-          <div className="stat place-items-center">
+          <div className="stat place-items-center p-0.5">
             <div className="stat-title text-secondary">Required</div>
             <div className="stat-value text-secondary">
               {_.round(requiredKWhToCharge, 1)}
