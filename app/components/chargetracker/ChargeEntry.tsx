@@ -30,7 +30,7 @@ export default function ChargeEntry(props: ChargeEntryProps) {
     setKiloWattHours(event?.kiloWattHours ?? 0)
     setPrice(event?.pricePerCharge ?? 0)
     setProvider(event?.providerFK ?? _.first(providers))
-  }, [event])
+  }, [event, providers])
 
   return (
     <Form method="post">
@@ -142,7 +142,7 @@ export default function ChargeEntry(props: ChargeEntryProps) {
             >
               {providers.map((p) => (
                 <li key={p.name} className="rounded">
-                  <a onClick={() => setProvider(p)}>{p.name}</a>
+                  <button onClick={() => setProvider(p)}>{p.name}</button>
                 </li>
               ))}
             </ul>

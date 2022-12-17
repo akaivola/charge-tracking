@@ -3,8 +3,6 @@ import invariant from 'tiny-invariant'
 
 import type { User } from '~/models/user.server'
 import { getUserById } from '~/models/user.server'
-import { isNumber } from 'lodash/fp'
-import { logger } from './logger.server'
 import _ from 'lodash'
 
 invariant(process.env.SESSION_SECRET, 'SESSION_SECRET must be set')

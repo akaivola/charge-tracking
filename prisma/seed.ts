@@ -64,6 +64,7 @@ async function seed() {
     o: 'other',
   }
   reader.on('line', async (row) => {
+    //eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [dateRaw, kiloWattHours, pricePerCharge, _, providerRaw] =
       row.split(',')
     logger.info(row)
