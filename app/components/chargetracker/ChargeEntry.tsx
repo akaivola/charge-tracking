@@ -29,8 +29,7 @@ export default function ChargeEntry(props: ChargeEntryProps) {
     setDate(event?.date ?? format(new Date()))
     setKiloWattHours(event?.kiloWattHours ?? 0)
     setPrice(event?.pricePerCharge ?? 0)
-    setProvider(event?.providerFK ?? _.first(providers))
-  }, [event, providers])
+  }, [event])
 
   return (
     <Form method="post">
