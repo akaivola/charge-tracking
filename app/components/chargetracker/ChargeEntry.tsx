@@ -29,7 +29,8 @@ export default function ChargeEntry(props: ChargeEntryProps) {
     setDate(event?.date ?? format(new Date()))
     setKiloWattHours(event?.kiloWattHours ?? 0)
     setPrice(event?.pricePerCharge ?? 0)
-  }, [event])
+    setProvider(event?.providerFK ?? _.first(providers))
+  }, [event, providers])
 
   return (
     <Form method="post">
@@ -81,7 +82,10 @@ export default function ChargeEntry(props: ChargeEntryProps) {
                 className="justify-self-center bg-black text-center"
                 name="kiloWattHours"
                 size={6}
-                onChange={(e) => setKiloWattHours(Number(e.target.value))}
+                onChange={(e) => {
+                  e.preventDefault()
+                  return setKiloWattHours(Number(e.target.value))
+                }}
                 value={kiloWattHours}
               />{' '}
               <span className="select-none">kWh</span>
@@ -110,7 +114,10 @@ export default function ChargeEntry(props: ChargeEntryProps) {
                 className="justify-self-center bg-black text-center"
                 name="pricePerCharge"
                 size={6}
-                onChange={(e) => setPrice(Number(e.target.value))}
+                onChange={(e) => {
+                  e.preventDefault()
+                  return setPrice(Number(e.target.value))
+                }}
                 value={price}
               />{' '}
               <span className="select-none">e</span>
@@ -141,7 +148,15 @@ export default function ChargeEntry(props: ChargeEntryProps) {
             >
               {providers.map((p) => (
                 <li key={p.name} className="rounded">
-                  <button onClick={() => setProvider(p)}>{p.name}</button>
+                  <button
+                    className="touch-none"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      return setProvider(p)
+                    }}
+                  >
+                    {p.name}
+                  </button>
                 </li>
               ))}
             </ul>
@@ -150,13 +165,16 @@ export default function ChargeEntry(props: ChargeEntryProps) {
         <input
           type="button"
           defaultValue="Clear fields"
-          onClick={(_) => props.newEvent()}
-          className="btn btn-accent col-span-2 my-2 justify-self-center rounded px-2"
+          onClick={(e) => {
+            e.preventDefault()
+            return props.newEvent()
+          }}
+          className="btn btn-accent col-span-2 my-2 touch-none justify-self-center rounded px-2"
         />
         <input
           type="submit"
           name="_action"
-          className="btn btn-accent col-span-2 my-2 justify-self-center rounded"
+          className="btn btn-accent col-span-2 my-2 touch-none justify-self-center rounded"
           readOnly
           value={mode}
         />
@@ -164,7 +182,7 @@ export default function ChargeEntry(props: ChargeEntryProps) {
           <input
             type="submit"
             name="_action"
-            className="btn btn-accent col-span-2 row-start-4 my-4 justify-self-center rounded"
+            className="btn btn-accent col-span-2 row-start-4 my-4 touch-none justify-self-center rounded"
             readOnly
             value="restore last"
           />
@@ -173,7 +191,7 @@ export default function ChargeEntry(props: ChargeEntryProps) {
           <input
             type="submit"
             name="_action"
-            className="btn btn-accent col-span-2 col-start-3 row-start-4 my-4 justify-self-center rounded"
+            className="btn btn-accent col-span-2 col-start-3 row-start-4 my-4 touch-none justify-self-center rounded"
             readOnly
             value={'delete'}
           />

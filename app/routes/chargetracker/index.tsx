@@ -106,7 +106,7 @@ export async function action({ request }: ActionArgs) {
 export const meta: MetaFunction = () => {
   return {
     title: 'Charge Tracking',
-    viewport: 'initial-scale=1,viewport-fit=cover'
+    viewport: 'initial-scale=1,viewport-fit=cover',
   }
 }
 
@@ -151,7 +151,10 @@ export default function ChargeTrackerIndexPage() {
                   className={`col-span-full grid cursor-pointer grid-cols-12 gap-x-6 py-2 text-xs md:text-base ${
                     isSelected ? 'text-warning' : ''
                   }`}
-                  onClick={() => setEvent(anEvent)}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    return setEvent(anEvent)
+                  }}
                 >
                   <div className="col-span-3">{date}</div>
                   <div className="col-span-2 text-right">{kiloWattHours}</div>
@@ -171,7 +174,7 @@ export default function ChargeTrackerIndexPage() {
 
       <div className="btm-nav">
         <button
-          className={`text-secondary ${isTabActive('info', tab)}`}
+          className={`touch-none text-secondary ${isTabActive('info', tab)}`}
           onClick={() => setTab('info')}
         >
           <svg
@@ -190,7 +193,10 @@ export default function ChargeTrackerIndexPage() {
           </svg>
         </button>
         <button
-          className={`text-secondary ${isTabActive('calculator', tab)}`}
+          className={`touch-none text-secondary ${isTabActive(
+            'calculator',
+            tab
+          )}`}
           onClick={() => setTab('calculator')}
         >
           calculator
