@@ -28,7 +28,7 @@ export function Stats({ chargeEvents }: StatsProps) {
 
   const { count, kWh, price, first, last } = total
   return (
-    <section className="grid">
+    <section className="grid touch-none select-none">
       <div className="stats shadow">
         <div className="stat place-items-center">
           <div className="stat-title text-secondary">Total Charges</div>

@@ -135,7 +135,7 @@ export default function ChargeTrackerIndexPage() {
               newEvent={() => setEvent({} as SerializedChargeEvent)}
             />
           </div>
-          <section className="md:text-md grid grid-cols-12 gap-x-6">
+          <section className="md:text-md grid grid-cols-12 gap-x-6 select-none">
             <div className="col-span-3">Date</div>
             <div className="col-span-2 text-right">kWh</div>
             <div className="col-span-2 text-right">e/ charge</div>
@@ -172,7 +172,7 @@ export default function ChargeTrackerIndexPage() {
 
       {tab === 'calculator' && <Calculator />}
 
-      <div className="btm-nav">
+      <div className="btm-nav select-none">
         <button
           className={`touch-none text-secondary ${isTabActive('info', tab)}`}
           onClick={() => setTab('info')}

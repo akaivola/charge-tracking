@@ -37,7 +37,7 @@ export default function ChargeEntry(props: ChargeEntryProps) {
       {event && (
         <input type="hidden" name="id" value={event.id?.toString()} readOnly />
       )}
-      <div className="grid grid-cols-4">
+      <div className="grid grid-cols-4 select-none">
         <div className="col-span-4 grid grid-cols-3">
           <div className="grid justify-self-center">
             <div className="grid w-full grid-cols-1">

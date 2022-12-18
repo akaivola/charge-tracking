@@ -25,7 +25,7 @@ export default function Calculator() {
     ((availableKwh + requiredKWhToCharge) / consumptionWhPerKm) * 1000
 
   return (
-    <section className="pb-20">
+    <section className="pb-20 select-none touch-none">
       <section className="grid grid-cols-2 gap-2">
         <div className="stats stats-vertical shadow">
           <div className="stat place-items-center p-0.5">
@@ -71,7 +71,7 @@ export default function Calculator() {
 
       <section className="divider"></section>
 
-      <section className="md:text-md grid grid-cols-2 gap-6 md:grid-cols-3">
+      <section className="md:text-md grid grid-cols-2 gap-6 md:grid-cols-3 select-none touch-none">
         <div>
           <div>Consumption (Wh/km)</div>
           <div>
