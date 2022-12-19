@@ -120,7 +120,7 @@ export default function ChargeTrackerIndexPage() {
   const { chargeEvents, providers, lastDeleted } =
     useTypedLoaderData<typeof loader>()
   const [event, setEvent] = useState({} as SerializedChargeEvent)
-  const [tab, setTab] = useState('calculator' as Tab)
+  const [tab, setTab] = useState('info' as Tab)
 
   return (
     <main className="container mx-auto bg-black p-4">
