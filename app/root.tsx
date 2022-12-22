@@ -36,10 +36,12 @@ export default function App() {
         <Links />
       </head>
       <body className="font-mono text-green-400">
-        <Outlet />
-        <ScrollRestoration />
-        <Scripts />
-        <LiveReload />
+        <main className="container mx-auto bg-black p-4">
+          <Outlet />
+          <ScrollRestoration />
+          <Scripts />
+          <LiveReload />
+        </main>
       </body>
     </html>
   )

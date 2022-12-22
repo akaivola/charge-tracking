@@ -37,7 +37,7 @@ export default function ChargeEntry(props: ChargeEntryProps) {
       {event && (
         <input type="hidden" name="id" value={event.id?.toString()} readOnly />
       )}
-      <div className="grid grid-cols-4 select-none">
+      <div className="grid select-none grid-cols-4">
         <div className="col-span-4 grid grid-cols-3">
           <div className="grid justify-self-center">
             <div className="grid w-full grid-cols-1">
@@ -138,7 +138,7 @@ export default function ChargeEntry(props: ChargeEntryProps) {
             />
             <label
               tabIndex={0}
-              className="btn btn-secondary btn-sm m-1 rounded p-2"
+              className="btn-secondary btn-sm btn m-1 rounded p-2"
             >
               {provider?.name || '???'}
             </label>
@@ -169,12 +169,12 @@ export default function ChargeEntry(props: ChargeEntryProps) {
             e.preventDefault()
             return props.newEvent()
           }}
-          className="btn btn-accent col-span-2 my-2 touch-none justify-self-center rounded px-2"
+          className="btn-accent btn col-span-2 my-2 touch-none justify-self-center rounded px-2"
         />
         <input
           type="submit"
           name="_action"
-          className="btn btn-accent col-span-2 my-2 touch-none justify-self-center rounded"
+          className="btn-accent btn col-span-2 my-2 touch-none justify-self-center rounded"
           readOnly
           value={mode}
         />
@@ -182,7 +182,7 @@ export default function ChargeEntry(props: ChargeEntryProps) {
           <input
             type="submit"
             name="_action"
-            className="btn btn-accent col-span-2 row-start-4 my-4 touch-none justify-self-center rounded"
+            className="btn-accent btn col-span-2 row-start-4 my-4 touch-none justify-self-center rounded"
             readOnly
             value="restore last"
           />
@@ -191,7 +191,7 @@ export default function ChargeEntry(props: ChargeEntryProps) {
           <input
             type="submit"
             name="_action"
-            className="btn btn-accent col-span-2 col-start-3 row-start-4 my-4 touch-none justify-self-center rounded"
+            className="btn-accent btn col-span-2 col-start-3 row-start-4 my-4 touch-none justify-self-center rounded"
             readOnly
             value={'delete'}
           />
