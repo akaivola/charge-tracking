@@ -1,6 +1,5 @@
 import type { LoaderArgs } from '@remix-run/server-runtime'
 import { typedjson, useTypedLoaderData } from 'remix-typedjson'
-import Navigation from '../../components/Navigation'
 import { getProviderCounts } from '../../models/providers.server'
 import { requireUserId } from '../../session.server'
 
@@ -22,8 +21,6 @@ export default function Settings() {
           <div key={p.name}>{p.name}</div>
         ))}
       </section>
-
-      <Navigation tab={'settings'} />
     </section>
   )
 }

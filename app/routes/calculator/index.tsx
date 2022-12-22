@@ -1,8 +1,6 @@
 import { Link } from '@remix-run/react'
-import _ from 'lodash'
-import { toNumber } from 'lodash'
+import _, { toNumber } from 'lodash'
 import { useState } from 'react'
-import Navigation from '../../components/Navigation'
 
 export default function Calculator() {
   const [batterySize, setBatterySize] = useState(28)
@@ -162,8 +160,6 @@ export default function Calculator() {
           <div>{degradationPercent}</div>
         </div>
       </section>
-
-      <Navigation tab={'calculator'} />
     </section>
   )
 }

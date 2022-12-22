@@ -9,12 +9,11 @@ import {
   getChargeEvents,
   getLastDeletedChargeEvent,
   toSerializable,
-  updateChargeEvent,
+  updateChargeEvent
 } from '~/models/chargeevents.server'
 import { requireUserId } from '~/session.server'
 import ChargeEntry from '../../components/chargetracker/ChargeEntry'
 import Stats from '../../components/chargetracker/Stats'
-import Navigation from '../../components/Navigation'
 import { logger } from '../../logger.server'
 import { getProviderCounts } from '../../models/providers.server'
 import { parse } from '../../utils'
@@ -168,7 +167,6 @@ export default function ChargeTrackerIndexPage() {
           )
         })}
       </section>
-      <Navigation tab={'chargetracker'} />
     </section>
   )
 }
