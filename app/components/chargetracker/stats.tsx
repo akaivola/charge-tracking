@@ -6,7 +6,7 @@ export interface StatsProps {
   chargeEvents: SerializedChargeEvent[]
 }
 
-export function Stats({ chargeEvents }: StatsProps) {
+export default function Stats({ chargeEvents }: StatsProps) {
   const total = chargeEvents.reduce(
     (acc, ce) => {
       const { kWh, price, count } = acc

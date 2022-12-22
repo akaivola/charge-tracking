@@ -1,4 +1,4 @@
-import { LoaderArgs } from '@remix-run/server-runtime'
+import type { LoaderArgs } from '@remix-run/server-runtime'
 import { typedjson, useTypedLoaderData } from 'remix-typedjson'
 import Navigation from '../../components/Navigation'
 import { getProviderCounts } from '../../models/providers.server'
