@@ -1,4 +1,4 @@
-import { ChargeEvent, Prisma } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import type { ActionArgs, LoaderArgs, MetaFunction } from '@remix-run/node'
 import _ from 'lodash'
 import { useState } from 'react'
@@ -8,14 +8,13 @@ import {
   deleteChargeEvent,
   getChargeEvents,
   getLastDeletedChargeEvent,
-  SerializableChargeEvent,
   toSerializable,
   updateChargeEvent,
 } from '~/models/chargeevents.server'
 import { requireUserId } from '~/session.server'
 import ChargeEntry from '../../components/chargetracker/ChargeEntry'
 import { Stats } from '../../components/chargetracker/Stats'
-import Navigation, { Tab } from '../../components/Navigation'
+import Navigation from '../../components/Navigation'
 import { logger } from '../../logger.server'
 import { getProviderCounts } from '../../models/providers.server'
 import { parse } from '../../utils'
