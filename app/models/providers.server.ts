@@ -18,6 +18,8 @@ const providers = [
   'other',
 ]
 
+export type ProviderCount = Provider & { count: number }
+
 export async function initializeProviders() {
   const count = await prisma.provider.count()
   if (count === 0) {
@@ -30,7 +32,7 @@ export async function initializeProviders() {
 }
 
 export async function getProviderCounts(userId: User['id']) {
-  return prisma.$queryRaw<Provider[]>(
+  return prisma.$queryRaw<ProviderCount[]>(
     Prisma.sql`select p.name, count(p.name) as count from "Provider" p left join "ChargeEvent" c on c.provider = p.name and c."userId" = ${userId} group by p.name order by 2 desc`
   )
 }
