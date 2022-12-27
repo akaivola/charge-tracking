@@ -1,14 +1,14 @@
 import _ from 'lodash'
 import { toNumber } from 'lodash'
-import { useState } from 'react'
+import useLocalStorage from 'use-local-storage'
 
 export default function Calculator() {
-  const [batterySize, setBatterySize] = useState(28)
-  const [stateOfCharge, setStateOfCharge] = useState(50)
-  const [chargeRate, setChargeRate] = useState(3.7)
-  const [degradationPercent, setDegradationPercent] = useState(4)
-  const [consumptionWhPerKm, setConsumptionWhPerKm] = useState(150)
-  const [chargeToSoC, setChargeToSoC] = useState(100)
+  const [batterySize, setBatterySize] = useLocalStorage("batterySize", 28)
+  const [stateOfCharge, setStateOfCharge] = useLocalStorage("stateOfCharge", 50)
+  const [chargeRate, setChargeRate] = useLocalStorage("chargeRate", 3.7)
+  const [degradationPercent, setDegradationPercent] = useLocalStorage("degradationPercent", 4)
+  const [consumptionWhPerKm, setConsumptionWhPerKm] = useLocalStorage("consumptionWhPerKm", 150)
+  const [chargeToSoC, setChargeToSoC] = useLocalStorage("chargeToSoC", 100)
 
   const usedPercentage = 100 - stateOfCharge
   const availableBatteryKwh = (batterySize * (100 - degradationPercent)) / 100
