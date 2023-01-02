@@ -15,6 +15,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   password    Password?
+  provider    Provider?
   ChargeEvent ChargeEvent[]
 }
 
@@ -26,6 +27,8 @@ model Password {
 
 model Provider {
   name        String        @unique
+  userId      BigInt        @unique
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   ChargeEvent ChargeEvent[]
 }
 
