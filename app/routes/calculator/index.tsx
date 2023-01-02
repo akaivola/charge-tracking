@@ -1,14 +1,14 @@
-import _ from 'lodash'
-import { toNumber } from 'lodash'
-import { useState } from 'react'
+import { Link } from '@remix-run/react'
+import _, { toNumber } from 'lodash'
+import useLocalStorage from 'use-local-storage'
 
 export default function Calculator() {
-  const [batterySize, setBatterySize] = useState(28)
-  const [stateOfCharge, setStateOfCharge] = useState(50)
-  const [chargeRate, setChargeRate] = useState(3.7)
-  const [degradationPercent, setDegradationPercent] = useState(4)
-  const [consumptionWhPerKm, setConsumptionWhPerKm] = useState(150)
-  const [chargeToSoC, setChargeToSoC] = useState(100)
+  const [batterySize, setBatterySize] = useLocalStorage("batterySize", 28)
+  const [stateOfCharge, setStateOfCharge] = useLocalStorage("stateOfCharge", 50)
+  const [chargeRate, setChargeRate] = useLocalStorage("chargeRate", 3.7)
+  const [degradationPercent, setDegradationPercent] = useLocalStorage("degradationPercent", 4)
+  const [consumptionWhPerKm, setConsumptionWhPerKm] = useLocalStorage("consumptionWhPerKm", 150)
+  const [chargeToSoC, setChargeToSoC] = useLocalStorage("chargeToSoC", 100)
 
   const usedPercentage = 100 - stateOfCharge
   const availableBatteryKwh = (batterySize * (100 - degradationPercent)) / 100
@@ -25,7 +25,7 @@ export default function Calculator() {
     ((availableKwh + requiredKWhToCharge) / consumptionWhPerKm) * 1000
 
   return (
-    <section className="pb-20 select-none touch-none">
+    <section className="touch-none select-none pb-20">
       <section className="grid grid-cols-2 gap-2">
         <div className="stats stats-vertical shadow">
           <div className="stat place-items-center p-0.5">
@@ -62,7 +62,12 @@ export default function Calculator() {
           <div className="stat place-items-center p-0.5">
             <div className="stat-title text-secondary">Required</div>
             <div className="stat-value text-secondary">
-              {_.round(requiredKWhToCharge, 1)}
+              <Link
+                className="underline"
+                to={`/chargetracker?kwh=${_.round(requiredKWhToCharge, 1)}`}
+              >
+                {_.round(requiredKWhToCharge, 1)}
+              </Link>
             </div>
             <div className="stat-desc text-secondary">kWh</div>
           </div>
@@ -71,7 +76,7 @@ export default function Calculator() {
 
       <section className="divider"></section>
 
-      <section className="md:text-md grid grid-cols-2 gap-6 md:grid-cols-3 select-none touch-none">
+      <section className="md:text-md grid touch-none select-none grid-cols-2 gap-6 md:grid-cols-3">
         <div>
           <div>Consumption (Wh/km)</div>
           <div>
