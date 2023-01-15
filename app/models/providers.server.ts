@@ -5,7 +5,7 @@ import { prisma } from '~/db.server'
 import type { User } from '~/models/user.server'
 export type { Provider } from '@prisma/client'
 
-const providers = [
+const defaultProviders = [
   'abc',
   'virta',
   'recharge',
@@ -24,7 +24,7 @@ export async function initializeProviders(userId: User['id']) {
   const count = await prisma.provider.count()
   if (count === 0) {
     await prisma.provider.createMany({
-      data: providers.map((p) => {
+      data: defaultProviders.map((p) => {
         return { name: p!, userId }
       }),
     })
@@ -38,4 +38,10 @@ export async function getProviderCounts(userId: User['id']) {
     and c.deletedAt is null
     group by p.name order by 2 desc`
   )
+}
+
+export async function addProvider(name: string, userId: User['id']) {
+  return prisma.provider.create({
+    data: { name, userId },
+  })
 }
