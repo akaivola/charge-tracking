@@ -48,7 +48,7 @@ async function seed() {
   })
 
   await prisma.provider.deleteMany()
-  await initializeProviders()
+  await initializeProviders(user.id)
 
   await prisma.chargeEvent.deleteMany()
   var stream = fs.createReadStream('Charge Times - Log.csv')

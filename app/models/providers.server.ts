@@ -20,12 +20,12 @@ const providers = [
 
 export type ProviderCount = Provider & { count: number }
 
-export async function initializeProviders() {
+export async function initializeProviders(userId: User['id']) {
   const count = await prisma.provider.count()
   if (count === 0) {
     await prisma.provider.createMany({
       data: providers.map((p) => {
-        return { name: p! }
+        return { name: p!, userId }
       }),
     })
   }
@@ -33,8 +33,9 @@ export async function initializeProviders() {
 
 export async function getProviderCounts(userId: User['id']) {
   return prisma.$queryRaw<ProviderCount[]>(
-    Prisma.sql`select p.name, count(p.name) as count from "Provider" p left join "ChargeEvent" c on c.provider = p.name and c."userId" = ${userId} group by p.name order by 2 desc`
+    Prisma.sql`select p.name, count(p.name) as count from "Provider" p 
+    left join "ChargeEvent" c on c.provider = p.name and c."userId" = p.${userId} 
+    and c.deletedAt is null
+    group by p.name order by 2 desc`
   )
 }
-
-initializeProviders().then(() => console.log('providers initialized'))
