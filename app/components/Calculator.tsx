@@ -21,6 +21,7 @@ export default function Calculator() {
   // calculate a napkin math efficiency reduction for charge rates below 11kW (16A 3-phase). 
   // There are 32A 3-phase chargers on some EVs, so this is is a very rough estimate.
   // Further, efficiency is affected by temparature as some of the energy may be spent on battery heating or cooling.
+  // It may be better to just calculate the losses and display it separately instead of hiding the calculation.
   const chargeRateByEfficiency = (chargeRate: number) => {
     const cutoff = 11
     const efficiency = 0.9
