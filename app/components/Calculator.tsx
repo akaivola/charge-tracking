@@ -5,7 +5,7 @@ import useLocalStorage from 'use-local-storage'
 export default function Calculator() {
   const [batterySize, setBatterySize] = useLocalStorage("batterySize", 28)
   const [stateOfCharge, setStateOfCharge] = useLocalStorage("stateOfCharge", 50)
-  const [chargeRate, setChargeRate] = useLocalStorage("chargeRate", 3.7)
+  const [chargeRate, setChargeRate] = useLocalStorage("chargeRate", 3.3) // 16A single phase continous current
   const [degradationPercent, setDegradationPercent] = useLocalStorage("degradationPercent", 4)
   const [consumptionWhPerKm, setConsumptionWhPerKm] = useLocalStorage("consumptionWhPerKm", 150)
   const [chargeToSoC, setChargeToSoC] = useLocalStorage("chargeToSoC", 100)
@@ -18,7 +18,16 @@ export default function Calculator() {
   const requiredKWhToCharge =
     ((chargeToSoC - stateOfCharge) * availableBatteryKwh) / 100
 
-  const requiredTimeToChargeHours = requiredKWhToCharge / chargeRate
+  // calculate a napkin math efficiency reduction for charge rates below 11kW (16A 3-phase). 
+  // There are 32A 3-phase chargers on some EVs, so this is is a very rough estimate.
+  // Further, efficiency is affected by temparature as some of the energy may be spent on battery heating or cooling.
+  const chargeRateByEfficiency = (chargeRate: number) => {
+    const cutoff = 11
+    const efficiency = 0.9
+    return chargeRate <= cutoff ? chargeRate * efficiency : chargeRate
+  }
+
+  const requiredTimeToChargeHours = requiredKWhToCharge / chargeRateByEfficiency(chargeRate)
   const requiredTimeToChargeMinutes = requiredTimeToChargeHours * 60
 
   const rangeAfterCharge =
