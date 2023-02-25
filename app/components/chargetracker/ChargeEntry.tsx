@@ -9,7 +9,7 @@ import DateAdjustButton from '../DateAdjustButton'
 
 export interface ChargeEntryProps {
   newEvent: () => void
-  providers: Provider[]
+  providers: Omit<Provider, 'userId'>[]
   event?: Partial<SerializedChargeEvent>
   lastDeleted: SerializedChargeEvent | null
 }

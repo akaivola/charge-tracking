@@ -18,7 +18,7 @@ const defaultProviders = [
   'other',
 ]
 
-export type ProviderCount = Provider & { count: number }
+export type ProviderCount = Omit<Provider, 'userId'> & { count: number }
 
 export async function initializeProviders(userId: User['id']) {
   const count = await prisma.provider.count()
