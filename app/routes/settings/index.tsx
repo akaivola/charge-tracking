@@ -19,6 +19,7 @@ export async function action({ request }: LoaderArgs) {
   if (!provider) {
     return { status: 400, body: 'Missing provider' }
   }
+  console.log('provider', provider.toString())
 
   await addProvider(provider.toString(), userId)
 
@@ -31,15 +32,15 @@ export default function Settings() {
   return (
     <section>
       <section>
-        <Form>
-          <h1 className='text-xl my-4'>Providers</h1>
+        <Form method="post">
+          <h1 className="my-4 text-xl">Providers</h1>
           {providers.map((p) => (
             <div key={p.name}>
               <span>{p.name}</span>
               <span>{p.count}</span>
             </div>
           ))}
-          <input type='text' name='provider' />
+          <input type="text" name="provider" />
         </Form>
       </section>
     </section>

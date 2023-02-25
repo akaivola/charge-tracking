@@ -3,12 +3,18 @@ import _, { toNumber } from 'lodash'
 import useLocalStorage from 'use-local-storage'
 
 export default function Calculator() {
-  const [batterySize, setBatterySize] = useLocalStorage("batterySize", 28)
-  const [stateOfCharge, setStateOfCharge] = useLocalStorage("stateOfCharge", 50)
-  const [chargeRate, setChargeRate] = useLocalStorage("chargeRate", 3.3) // 16A single phase continous current
-  const [degradationPercent, setDegradationPercent] = useLocalStorage("degradationPercent", 4)
-  const [consumptionWhPerKm, setConsumptionWhPerKm] = useLocalStorage("consumptionWhPerKm", 150)
-  const [chargeToSoC, setChargeToSoC] = useLocalStorage("chargeToSoC", 100)
+  const [batterySize, setBatterySize] = useLocalStorage('batterySize', 28)
+  const [stateOfCharge, setStateOfCharge] = useLocalStorage('stateOfCharge', 50)
+  const [chargeRate, setChargeRate] = useLocalStorage('chargeRate', 3.3) // 16A single phase continous current
+  const [degradationPercent, setDegradationPercent] = useLocalStorage(
+    'degradationPercent',
+    4
+  )
+  const [consumptionWhPerKm, setConsumptionWhPerKm] = useLocalStorage(
+    'consumptionWhPerKm',
+    150
+  )
+  const [chargeToSoC, setChargeToSoC] = useLocalStorage('chargeToSoC', 100)
 
   const usedPercentage = 100 - stateOfCharge
   const availableBatteryKwh = (batterySize * (100 - degradationPercent)) / 100
@@ -18,7 +24,7 @@ export default function Calculator() {
   const requiredKWhToCharge =
     ((chargeToSoC - stateOfCharge) * availableBatteryKwh) / 100
 
-  // calculate a napkin math efficiency reduction for charge rates below 11kW (16A 3-phase). 
+  // calculate a napkin math efficiency reduction for charge rates below 11kW (16A 3-phase).
   // There are 32A 3-phase chargers on some EVs, so this is is a very rough estimate.
   // Further, efficiency is affected by temparature as some of the energy may be spent on battery heating or cooling.
   // It may be better to just calculate the losses and display it separately instead of hiding the calculation.
@@ -28,7 +34,8 @@ export default function Calculator() {
     return chargeRate <= cutoff ? chargeRate * efficiency : chargeRate
   }
 
-  const requiredTimeToChargeHours = requiredKWhToCharge / chargeRateByEfficiency(chargeRate)
+  const requiredTimeToChargeHours =
+    requiredKWhToCharge / chargeRateByEfficiency(chargeRate)
   const requiredTimeToChargeMinutes = requiredTimeToChargeHours * 60
 
   const rangeAfterCharge =

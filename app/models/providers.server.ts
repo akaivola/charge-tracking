@@ -20,28 +20,33 @@ const defaultProviders = [
 
 export type ProviderCount = Omit<Provider, 'userId'> & { count: number }
 
-export async function initializeProviders(userId: User['id']) {
-  const count = await prisma.provider.count()
-  if (count === 0) {
-    await prisma.provider.createMany({
-      data: defaultProviders.map((p) => {
-        return { name: p!, userId }
-      }),
-    })
-  }
+export async function getProviders(userId: User['id'] | number) {
+  return prisma.provider.findMany({
+    where: { userId },
+    select: { id: true, name: true },
+  })
 }
 
-export async function getProviderCounts(userId: User['id']) {
+export async function getProviderCounts(userId: User['id'] | number) {
   return prisma.$queryRaw<ProviderCount[]>(
-    Prisma.sql`select p.name, count(p.name) as count from "Provider" p 
-    left join "ChargeEvent" c on c.provider = p.name and c."userId" = ${userId} 
+    Prisma.sql`select p.id, p.name, count(p.name) as count from "Provider" p 
+    left join "ChargeEvent" c on c."providerId" = p.id and c."userId" = ${userId} 
     and c."deletedAt" is null
-    group by p.name order by 2 desc`
+    group by p.id, p.name order by 2 desc`
   )
 }
 
-export async function addProvider(name: string, userId: User['id']) {
+export async function addProvider(name: string, userId: User['id'] | number) {
   return prisma.provider.create({
-    data: { name, userId },
+    select: {
+      id: true,
+      name: true,
+    },
+    data: {
+      name,
+      user: {
+        connect: { id: userId },
+      },
+    },
   })
 }

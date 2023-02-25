@@ -1,7 +1,7 @@
 import { Form } from '@remix-run/react'
 import _ from 'lodash'
 import React, { useState } from 'react'
-import type { Provider } from '../../models/providers.server'
+import type { ProviderCount } from '../../models/providers.server'
 import type { SerializedChargeEvent } from '../../routes/chargetracker'
 import { format } from '../../utils'
 import AdjustButton from '../AdjustButton'
@@ -9,7 +9,7 @@ import DateAdjustButton from '../DateAdjustButton'
 
 export interface ChargeEntryProps {
   newEvent: () => void
-  providers: Omit<Provider, 'userId'>[]
+  providers: ProviderCount[]
   event?: Partial<SerializedChargeEvent>
   lastDeleted: SerializedChargeEvent | null
 }
@@ -22,14 +22,14 @@ export default function ChargeEntry(props: ChargeEntryProps) {
   const [kiloWattHours, setKiloWattHours] = useState(event?.kiloWattHours ?? 0)
   const [price, setPrice] = useState(event?.pricePerCharge ?? 0)
   const [provider, setProvider] = useState(
-    event?.providerFK ?? _.first(providers)
+    event?.provider ?? _.first(providers)
   )
 
   React.useEffect(() => {
     setDate(event?.date ?? format(new Date()))
     setKiloWattHours(event?.kiloWattHours ?? 0)
     setPrice(event?.pricePerCharge ?? 0)
-    setProvider(event?.providerFK ?? _.first(providers))
+    setProvider(event?.provider ?? _.first(providers))
   }, [event, providers])
 
   return (
@@ -132,8 +132,8 @@ export default function ChargeEntry(props: ChargeEntryProps) {
           <div className="dropdown-down dropdown justify-self-center">
             <input
               type="hidden"
-              value={provider?.name || ''}
-              name="provider"
+              value={provider?.id}
+              name="providerId"
               readOnly
             />
             <label

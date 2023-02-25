@@ -15,8 +15,8 @@ model User {
   updatedAt DateTime @updatedAt
 
   password    Password?
-  provider    Provider?
   ChargeEvent ChargeEvent[]
+  Provider    Provider[]
 }
 
 model Password {
@@ -26,10 +26,13 @@ model Password {
 }
 
 model Provider {
-  name        String        @unique
-  userId      BigInt        @unique
+  id          Int           @id @default(autoincrement())
+  name        String
+  userId      BigInt
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   ChargeEvent ChargeEvent[]
+
+  @@unique([name, userId])
 }
 
 model ChargeEvent {
@@ -39,13 +42,13 @@ model ChargeEvent {
   kiloWattHours  Decimal @default(0.00) @db.Decimal(6, 2)
   pricePerCharge Decimal @default(0.00) @db.Decimal(6, 2)
 
-  provider String
-
   deletedAt DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  providerFK Provider @relation(fields: [provider], references: [name], onDelete: NoAction, onUpdate: Cascade)
-  userId     BigInt
+  provider   Provider @relation(fields: [providerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  providerId Int
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId BigInt
 }

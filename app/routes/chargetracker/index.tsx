@@ -9,7 +9,7 @@ import {
   getChargeEvents,
   getLastDeletedChargeEvent,
   toSerializable,
-  updateChargeEvent
+  updateChargeEvent,
 } from '~/models/chargeevents.server'
 import { requireUserId } from '~/session.server'
 import ChargeEntry from '../../components/chargetracker/ChargeEntry'
@@ -27,16 +27,15 @@ export async function loader({ request }: LoaderArgs) {
   const kwh = url.searchParams.get('kwh')
 
   const userId = await requireUserId(request)
-  const rawChargeEvents = await getChargeEvents({ userId })
-  const chargeEvents = rawChargeEvents
-  const providers = (await getProviderCounts(userId)).map((p) => ({
-    name: p.name,
-  }))
-  const lastDeleted = await getLastDeletedChargeEvent({ userId })
+  const chargeEvents = await getChargeEvents({ userId })
+  const providers = await getProviderCounts(userId)
+  const lastDeleted = await getLastDeletedChargeEvent({ userId }).then((ce) =>
+    ce ? toSerializable(ce) : null
+  )
   return typedjson({
     chargeEvents: chargeEvents.map(toSerializable),
     providers,
-    lastDeleted: lastDeleted ? toSerializable(lastDeleted) : null,
+    lastDeleted: lastDeleted || null,
     initialChargeEvent: kwh
       ? ({
           kiloWattHours: _.toNumber(kwh),
@@ -52,7 +51,7 @@ export async function action({ request }: ActionArgs) {
 
   logger.info(`action: ${_action} ${JSON.stringify(values)}`)
 
-  const { date, kiloWattHours, pricePerCharge, provider } = values
+  const { date, kiloWattHours, pricePerCharge, providerId } = values
   if ('insert' === _action) {
     const parsedDate = parse(date.toString())
     const result = await createChargeEvent({
@@ -60,7 +59,7 @@ export async function action({ request }: ActionArgs) {
       date: parsedDate!.toDate(),
       kiloWattHours: new Prisma.Decimal(kiloWattHours.toString()),
       pricePerCharge: new Prisma.Decimal(pricePerCharge.toString()),
-      provider: provider.toString(),
+      providerId: parseInt(providerId.toString()),
     })
 
     return typedjson({ result })
@@ -69,12 +68,16 @@ export async function action({ request }: ActionArgs) {
   if ('update' === _action) {
     const parsedDate = parse(date.toString())
     const result = await updateChargeEvent({
-      userId,
       id: BigInt(values.id.toString()),
       date: parsedDate!.toDate(),
       kiloWattHours: new Prisma.Decimal(kiloWattHours.toString()),
       pricePerCharge: new Prisma.Decimal(pricePerCharge.toString()),
-      provider: provider.toString(),
+      user: {
+        id: userId,
+      },
+      provider: {
+        id: parseInt(providerId.toString()),
+      },
     })
 
     logger.info(JSON.stringify(result))
@@ -83,7 +86,7 @@ export async function action({ request }: ActionArgs) {
 
   if ('delete' === _action) {
     const result = await deleteChargeEvent({
-      userId,
+      user: { id: userId },
       id: BigInt(values.id.toString()),
     })
     return typedjson({ result })
@@ -92,16 +95,9 @@ export async function action({ request }: ActionArgs) {
   if ('restore last' === _action) {
     const lastDeleted = await getLastDeletedChargeEvent({ userId })
     if (lastDeleted) {
-      const { date, kiloWattHours, pricePerCharge, id, userId, providerFK } =
-        lastDeleted
       const updated = updateChargeEvent({
-        id,
-        userId,
-        date,
-        kiloWattHours,
-        pricePerCharge,
+        ...lastDeleted,
         deletedAt: null,
-        provider: providerFK.name,
       })
       return typedjson({ updated })
     } else return typedjson({ error: 'unable to restore last deleted' })
@@ -142,8 +138,7 @@ export default function ChargeTrackerIndexPage() {
         <div className="col-span-2 text-right">e * kWh</div>
         <div className="col-span-3">Provider</div>
         {chargeEvents.map((anEvent) => {
-          const { id, date, kiloWattHours, pricePerCharge, providerFK } =
-            anEvent
+          const { id, date, kiloWattHours, pricePerCharge, provider } = anEvent
           const isSelected = event && event.id === id
           return (
             <div
@@ -162,7 +157,7 @@ export default function ChargeTrackerIndexPage() {
               <div className="col-span-2 text-right">
                 {_.round(pricePerCharge / kiloWattHours, 2)}
               </div>
-              <div className="col-span-3">{providerFK.name}</div>
+              <div className="col-span-3">{provider.name}</div>
             </div>
           )
         })}
