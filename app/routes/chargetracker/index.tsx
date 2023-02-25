@@ -13,7 +13,7 @@ import {
 } from '~/models/chargeevents.server'
 import { requireUserId } from '~/session.server'
 import ChargeEntry from '../../components/chargetracker/ChargeEntry'
-import Stats from '../../components/chargetracker/Stats'
+import Stats from '../../components/chargetracker/stats'
 import { logger } from '../../logger.server'
 import { getProviderCounts } from '../../models/providers.server'
 import { parse } from '../../utils'
