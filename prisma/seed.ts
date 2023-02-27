@@ -1,11 +1,11 @@
-import { PrismaClient, Provider } from '@prisma/client'
-import bcrypt from 'bcryptjs'
-import fs from 'fs'
-import _ from 'lodash'
-import { keyBy } from 'lodash'
-import readline from 'readline'
-import { logger } from '../app/logger.server'
-import { addProvider } from '../app/models/providers.server'
+import type { Provider } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import fs from 'fs';
+import { keyBy } from 'lodash';
+import readline from 'readline';
+import { logger } from '../app/logger.server';
+import { addProvider } from '../app/models/providers.server';
 
 const prisma = new PrismaClient({
   errorFormat: 'pretty',
@@ -32,7 +32,10 @@ async function fetchOrAddProvider(
   if (provider) return provider
   else {
     const newProvider = await addProvider(name, userId)
-    const newProviders = [...((providers && Object.values(providers)) ?? []), newProvider]
+    const newProviders = [
+      ...((providers && Object.values(providers)) ?? []),
+      newProvider,
+    ]
     logger.info(JSON.stringify(newProviders), keyBy(newProviders, 'name'))
     if (newProviders.length === 0)
       throw new Error(`Failed to add provider ${name} for user ${userId}`)

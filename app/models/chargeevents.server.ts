@@ -1,7 +1,7 @@
 import type { ChargeEvent, Provider, User } from '@prisma/client'
 import _ from 'lodash'
 import invariant from 'tiny-invariant'
-import { Overwrite } from 'utility-types'
+import type { Overwrite } from 'utility-types'
 
 import { prisma } from '~/db.server'
 import { format } from '../utils'

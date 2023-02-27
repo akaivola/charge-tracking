@@ -5,18 +5,18 @@ import { prisma } from '~/db.server'
 import type { User } from '~/models/user.server'
 export type { Provider } from '@prisma/client'
 
-const defaultProviders = [
-  'abc',
-  'virta',
-  'recharge',
-  'office',
-  'k-lataus',
-  'lidl',
-  'ikea',
-  'home',
-  'plugit',
-  'other',
-]
+// const defaultProviders = [
+//   'abc',
+//   'virta',
+//   'recharge',
+//   'office',
+//   'k-lataus',
+//   'lidl',
+//   'ikea',
+//   'home',
+//   'plugit',
+//   'other',
+// ]
 
 export type ProviderCount = Omit<Provider, 'userId'> & { count: number }
 
