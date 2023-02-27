@@ -18,12 +18,7 @@ const chargeEventSelect = {
       id: true,
     },
   },
-  provider: {
-    select: {
-      id: true,
-      name: true,
-    },
-  },
+  provider: true,
   deletedAt: true,
   updatedAt: true,
 }
