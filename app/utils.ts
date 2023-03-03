@@ -88,8 +88,8 @@ export function format(date: Date) {
   return dayjs.utc(date).format('DD.MM.YYYY')
 }
 
-export function parse(dateStr: string | undefined) {
-  return dateStr ? dayjs.utc(dateStr, 'DD.MM.YYYY') : undefined
+export function parse(date: string | Date | undefined) {
+  return dayjs.utc(date, 'DD.MM.YYYY')
 }
 
 export function formatShort(day: Dayjs | undefined) {

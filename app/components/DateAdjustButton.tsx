@@ -3,7 +3,7 @@ import { formatDay, parse } from '../utils'
 
 export default function DateAdjustButton(props: {
   value: number
-  getter: string
+  getter: string | Date
   setter: (newValue: string | undefined) => unknown
 }) {
   const oldDate = parse(props.getter)

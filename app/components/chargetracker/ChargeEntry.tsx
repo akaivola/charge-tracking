@@ -1,8 +1,8 @@
 import { Form } from '@remix-run/react'
 import _ from 'lodash'
 import React, { useState } from 'react'
+import type { ChargeEvent } from '../../models/chargeevents.server'
 import type { ProviderCount } from '../../models/providers.server'
-import type { SerializedChargeEvent } from '../../routes/chargetracker'
 import { format } from '../../utils'
 import AdjustButton from '../AdjustButton'
 import DateAdjustButton from '../DateAdjustButton'
@@ -10,27 +10,26 @@ import DateAdjustButton from '../DateAdjustButton'
 export interface ChargeEntryProps {
   newEvent: () => void
   providers: ProviderCount[]
-  event?: Partial<SerializedChargeEvent>
-  lastDeleted: SerializedChargeEvent | null
+  event?: Partial<ChargeEvent>
+  lastDeleted: ChargeEvent | null
 }
 
 export default function ChargeEntry(props: ChargeEntryProps) {
   const { providers, event, lastDeleted } = props
   const mode = event?.id ? 'update' : 'insert'
+  const foundProvider = event?.providerId ? providers.find(p => p.id === event.providerId) : _.first(providers)
 
-  const [date, setDate] = useState(event?.date ?? format(new Date()))
+  const [date, setDate] = useState(format(event?.date ?? new Date()))
   const [kiloWattHours, setKiloWattHours] = useState(event?.kiloWattHours ?? 0)
   const [price, setPrice] = useState(event?.pricePerCharge ?? 0)
-  const [provider, setProvider] = useState(
-    event?.provider ?? _.first(providers)
-  )
+  const [provider, setProvider] = useState(foundProvider)
 
   React.useEffect(() => {
-    setDate(event?.date ?? format(new Date()))
+    setDate(format(event?.date ?? new Date()))
     setKiloWattHours(event?.kiloWattHours ?? 0)
     setPrice(event?.pricePerCharge ?? 0)
-    setProvider(event?.provider ?? _.first(providers))
-  }, [event, providers])
+    setProvider(provider)
+  }, [event, provider])
 
   return (
     <Form method="post">

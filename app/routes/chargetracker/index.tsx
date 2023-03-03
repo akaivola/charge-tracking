@@ -1,45 +1,40 @@
-import { Prisma } from '@prisma/client'
-import type { ActionArgs, LoaderArgs, MetaFunction } from '@remix-run/node'
+import type { ActionArgs, LoaderArgs } from '@remix-run/node'
 import _ from 'lodash'
 import { useState } from 'react'
 import { typedjson, useTypedLoaderData } from 'remix-typedjson'
+import type {
+  ChargeEvent,
+  ChargeEventRelation} from '~/models/chargeevents.server';
 import {
   createChargeEvent,
   deleteChargeEvent,
   getChargeEvents,
   getLastDeletedChargeEvent,
-  toSerializable,
-  updateChargeEvent,
+  updateChargeEvent
 } from '~/models/chargeevents.server'
 import { requireUserId } from '~/session.server'
 import ChargeEntry from '../../components/chargetracker/ChargeEntry'
 import Stats from '../../components/chargetracker/stats'
 import { logger } from '../../logger.server'
 import { getProviderCounts } from '../../models/providers.server'
-import { parse } from '../../utils'
-
-type PromiseLoader = Awaited<ReturnType<typeof loader>>['typedjson']
-type Loader = Awaited<ReturnType<PromiseLoader>>
-export type SerializedChargeEvent = Loader['chargeEvents'][number]
+import { format, parse } from '../../utils'
 
 export async function loader({ request }: LoaderArgs) {
   const url = new URL(request.url)
-  const kwh = url.searchParams.get('kwh')
+  const kWh = url.searchParams.get('kWh')
 
   const userId = await requireUserId(request)
   const chargeEvents = await getChargeEvents({ userId })
   const providers = await getProviderCounts(userId)
-  const lastDeleted = await getLastDeletedChargeEvent({ userId }).then((ce) =>
-    ce ? toSerializable(ce) : null
-  )
+  const lastDeleted = await getLastDeletedChargeEvent({ userId })
   return typedjson({
-    chargeEvents: chargeEvents.map(toSerializable),
+    chargeEvents,
     providers,
     lastDeleted: lastDeleted || null,
-    initialChargeEvent: kwh
+    initialChargeEvent: kWh
       ? ({
-          kiloWattHours: _.toNumber(kwh),
-        } as Partial<ReturnType<typeof toSerializable>>)
+          kiloWattHours: parseFloat(kWh), 
+        } as Partial<ChargeEventRelation>)
       : null,
   })
 }
@@ -57,8 +52,8 @@ export async function action({ request }: ActionArgs) {
     const result = await createChargeEvent({
       userId,
       date: parsedDate!.toDate(),
-      kiloWattHours: new Prisma.Decimal(kiloWattHours.toString()),
-      pricePerCharge: new Prisma.Decimal(pricePerCharge.toString()),
+      kiloWattHours: parseFloat(kiloWattHours.toString()),
+      pricePerCharge: parseFloat(pricePerCharge.toString()),
       providerId: parseInt(providerId.toString()),
     })
 
@@ -70,14 +65,11 @@ export async function action({ request }: ActionArgs) {
     const result = await updateChargeEvent({
       id: BigInt(values.id.toString()),
       date: parsedDate!.toDate(),
-      kiloWattHours: new Prisma.Decimal(kiloWattHours.toString()),
-      pricePerCharge: new Prisma.Decimal(pricePerCharge.toString()),
-      user: {
-        id: userId,
-      },
-      provider: {
-        id: parseInt(providerId.toString()),
-      },
+      kiloWattHours: parseFloat(kiloWattHours.toString()),
+      pricePerCharge: parseFloat(pricePerCharge.toString()),
+      userId,
+      providerId: parseInt(providerId.toString()),
+      deletedAt: null,
     })
 
     logger.info(JSON.stringify(result))
@@ -86,7 +78,7 @@ export async function action({ request }: ActionArgs) {
 
   if ('delete' === _action) {
     const result = await deleteChargeEvent({
-      user: { id: userId },
+      userId,
       id: BigInt(values.id.toString()),
     })
     return typedjson({ result })
@@ -106,18 +98,12 @@ export async function action({ request }: ActionArgs) {
   return typedjson({ error: 'unknown action' })
 }
 
-export const meta: MetaFunction = () => {
-  return {
-    title: 'Charge Tracking',
-    viewport: 'initial-scale=1,viewport-fit=cover',
-  }
-}
 
 export default function ChargeTrackerIndexPage() {
   const { chargeEvents, providers, lastDeleted, initialChargeEvent } =
     useTypedLoaderData<typeof loader>()
   const [event, setEvent] = useState(
-    (initialChargeEvent ?? {}) as Partial<SerializedChargeEvent>
+    (initialChargeEvent ?? {}) as Partial<ChargeEvent>
   )
 
   return (
@@ -128,7 +114,7 @@ export default function ChargeTrackerIndexPage() {
           event={event}
           providers={providers}
           lastDeleted={lastDeleted}
-          newEvent={() => setEvent({} as Partial<SerializedChargeEvent>)}
+          newEvent={() => setEvent({} as Partial<ChargeEvent>)}
         />
       </div>
       <section className="md:text-md grid select-none grid-cols-12 gap-x-6">
@@ -151,9 +137,9 @@ export default function ChargeTrackerIndexPage() {
                 return setEvent(anEvent)
               }}
             >
-              <div className="col-span-3">{date}</div>
-              <div className="col-span-2 text-right">{kiloWattHours}</div>
-              <div className="col-span-2 text-right">{pricePerCharge}</div>
+              <div className="col-span-3">{format(date)}</div>
+              <div className="col-span-2 text-right">{kiloWattHours.toPrecision(2)}</div>
+              <div className="col-span-2 text-right">{pricePerCharge.toPrecision(2)}</div>
               <div className="col-span-2 text-right">
                 {_.round(pricePerCharge / kiloWattHours, 2)}
               </div>
