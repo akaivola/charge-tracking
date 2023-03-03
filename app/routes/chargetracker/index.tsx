@@ -138,8 +138,8 @@ export default function ChargeTrackerIndexPage() {
               }}
             >
               <div className="col-span-3">{format(date)}</div>
-              <div className="col-span-2 text-right">{kiloWattHours.toPrecision(2)}</div>
-              <div className="col-span-2 text-right">{pricePerCharge.toPrecision(2)}</div>
+              <div className="col-span-2 text-right">{_.round(kiloWattHours, 2)}</div>
+              <div className="col-span-2 text-right">{_.round(pricePerCharge, 2)}</div>
               <div className="col-span-2 text-right">
                 {_.round(pricePerCharge / kiloWattHours, 2)}
               </div>
