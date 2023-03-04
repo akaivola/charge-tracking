@@ -1,9 +1,9 @@
 import _ from 'lodash'
-import type { SerializedChargeEvent } from '../../routes/chargetracker'
-import { formatShort, parse } from '../../utils'
+import type { ChargeEventRelation } from '~/models/chargeevents.server'
+import { formatShort } from '../../utils'
 
 export interface StatsProps {
-  chargeEvents: SerializedChargeEvent[]
+  chargeEvents: ChargeEventRelation[]
 }
 
 export default function Stats({ chargeEvents }: StatsProps) {
@@ -21,14 +21,14 @@ export default function Stats({ chargeEvents }: StatsProps) {
       kWh: 0,
       price: 0,
       count: 0,
-      first: parse(_.first(chargeEvents)?.date),
-      last: parse(_.last(chargeEvents)?.date),
+      first: _.first(chargeEvents)?.date,
+      last: _.last(chargeEvents)?.date,
     }
   )
 
   const { count, kWh, price, first, last } = total
   return (
-    <section className="grid touch-none select-none">
+    <section data-test-id="stats" className="grid touch-none select-none">
       <div className="stats shadow">
         <div className="stat place-items-center">
           <div className="stat-title text-secondary">Total Charges</div>

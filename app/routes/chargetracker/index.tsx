@@ -117,7 +117,7 @@ export default function ChargeTrackerIndexPage() {
           newEvent={() => setEvent({} as Partial<ChargeEvent>)}
         />
       </div>
-      <section className="md:text-md grid select-none grid-cols-12 gap-x-6">
+      <section data-test-id="chargeEventsTable" className="md:text-md grid select-none grid-cols-12 gap-x-6">
         <div className="col-span-3">Date</div>
         <div className="col-span-2 text-right">kWh</div>
         <div className="col-span-2 text-right">e/ charge</div>

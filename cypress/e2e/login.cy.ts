@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 
-describe('smoke tests', () => {
+describe('sign up and login', () => {
   afterEach(() => {
     cy.cleanupUser()
   })
@@ -18,5 +18,11 @@ describe('smoke tests', () => {
     cy.findByRole('textbox', { name: /email/i }).type(loginForm.email)
     cy.findByLabelText(/password/i).type(loginForm.password)
     cy.findByRole('button', { name: /create account/i }).click()
+  })
+
+  it('should allow you to login', () => {
+    cy.login()
+    cy.visitAndCheck('/')
+    cy.findByText('')
   })
 })
