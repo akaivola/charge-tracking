@@ -56,7 +56,7 @@ export default function Stats({ chargeEvents }: StatsProps) {
         <div className="stat place-items-center">
           <div className="stat-title text-secondary">Price</div>
           <div className="stat-value text-secondary">
-            {_.round((price / kWh) * 100, 1)}
+            {price > 0 ? _.round((price / kWh) * 100, 1): 0}
           </div>
           <div className="stat-desc text-secondary">c/kWh</div>
         </div>

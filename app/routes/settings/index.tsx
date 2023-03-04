@@ -19,8 +19,6 @@ export async function action({ request }: LoaderArgs) {
   if (!provider) {
     return { status: 400, body: 'Missing provider' }
   }
-  console.log('provider', provider.toString())
-
   await addProvider(provider.toString(), userId)
 
   return typedjson({ providers: await getProviderCounts(userId) })

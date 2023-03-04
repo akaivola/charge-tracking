@@ -23,6 +23,6 @@ describe('sign up and login', () => {
   it('should allow you to login', () => {
     cy.login()
     cy.visitAndCheck('/')
-    cy.findByText('')
+    cy.findByTestId('chargeEventsTable').should('exist')
   })
 })

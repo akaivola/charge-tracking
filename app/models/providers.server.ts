@@ -32,6 +32,7 @@ export async function getProviderCounts(userId: User['id'] | number) {
     Prisma.sql`select p.id, p.name, count(p.name) as count from "Provider" p 
     left join "ChargeEvent" c on c."providerId" = p.id and c."userId" = ${userId} 
     and c."deletedAt" is null
+    where p."userId" = ${userId}
     group by p.id, p.name order by 2 desc`
   )
 }
