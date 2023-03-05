@@ -1,11 +1,11 @@
-import type { Provider } from '@prisma/client';
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
-import fs from 'fs';
-import { keyBy } from 'lodash';
-import readline from 'readline';
-import { logger } from '../app/logger.server';
-import { addProvider } from '../app/models/providers.server';
+import type { Provider } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
+import bcrypt from 'bcryptjs'
+import fs from 'fs'
+import { keyBy } from 'lodash'
+import readline from 'readline'
+import { logger } from '../app/logger.server'
+import { addProvider } from '../app/models/providers.server'
 
 const prisma = new PrismaClient({
   errorFormat: 'pretty',

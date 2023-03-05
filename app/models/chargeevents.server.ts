@@ -1,4 +1,8 @@
-import type { ChargeEvent as PrismaChargeEvent, Provider, User } from '@prisma/client'
+import type {
+  ChargeEvent as PrismaChargeEvent,
+  Provider,
+  User,
+} from '@prisma/client'
 import _, { compact } from 'lodash'
 import invariant from 'tiny-invariant'
 import type { Overwrite } from 'utility-types'
@@ -10,7 +14,8 @@ export type ChargeEvent = Overwrite<
   {
     kiloWattHours: number
     pricePerCharge: number
-  }>
+  }
+>
 
 type ProviderAndUser = {
   provider: Provider
@@ -24,7 +29,9 @@ export type ChargeEventRelation = ChargeEvent & ProviderAndUser
 export type ChargeEventUpdate = Omit<ChargeEvent, 'updatedAt' | 'createdAt'>
 export type ChargeEventDelete = Pick<ChargeEventRelation, 'id' | 'userId'>
 
-const convertDecimalToNumber = (event: PrismaChargeEventRelation | null): ChargeEventRelation | null => {
+const convertDecimalToNumber = (
+  event: PrismaChargeEventRelation | null
+): ChargeEventRelation | null => {
   if (!event) return null
   return {
     ...event,
@@ -33,31 +40,35 @@ const convertDecimalToNumber = (event: PrismaChargeEventRelation | null): Charge
   }
 }
 
-const convertDecimalsToNumbers = (events: PrismaChargeEventRelation[]): ChargeEventRelation[] => compact(events.map(convertDecimalToNumber))
+const convertDecimalsToNumbers = (
+  events: PrismaChargeEventRelation[]
+): ChargeEventRelation[] => compact(events.map(convertDecimalToNumber))
 
 export async function getChargeEvents({
   userId,
 }: {
   userId: User['id']
 }): Promise<ChargeEventRelation[]> {
-  return prisma.chargeEvent.findMany({
-    include: {
-      provider: true,
-      user: true
-    },
-    where: {
-      userId,
-      deletedAt: {
-        equals: null,
+  return prisma.chargeEvent
+    .findMany({
+      include: {
+        provider: true,
+        user: true,
       },
-    },
-    orderBy: [
-      {
-        date: 'desc',
+      where: {
+        userId,
+        deletedAt: {
+          equals: null,
+        },
       },
-      { id: 'desc' },
-    ],
-  }).then(convertDecimalsToNumbers)
+      orderBy: [
+        {
+          date: 'desc',
+        },
+        { id: 'desc' },
+      ],
+    })
+    .then(convertDecimalsToNumbers)
 }
 
 export function getLastDeletedChargeEvent({
@@ -65,21 +76,23 @@ export function getLastDeletedChargeEvent({
 }: {
   userId: User['id']
 }): Promise<ChargeEventRelation | null> {
-  return prisma.chargeEvent.findFirst({
-    include: {
-      provider: true,
-      user: true
-    },
-    where: {
-      userId,
-      deletedAt: {
-        not: null,
+  return prisma.chargeEvent
+    .findFirst({
+      include: {
+        provider: true,
+        user: true,
       },
-    },
-    orderBy: {
-      deletedAt: 'desc',
-    },
-  }).then(convertDecimalToNumber)
+      where: {
+        userId,
+        deletedAt: {
+          not: null,
+        },
+      },
+      orderBy: {
+        deletedAt: 'desc',
+      },
+    })
+    .then(convertDecimalToNumber)
 }
 
 export function createChargeEvent(
@@ -105,7 +118,10 @@ export async function updateChargeEvent(chargeEvent: ChargeEventUpdate) {
       userId: chargeEvent.userId,
       providerId: chargeEvent.providerId,
     },
-    data: { ..._.omit(chargeEvent, 'id', 'createdAt', 'userId'), updatedAt: new Date() },
+    data: {
+      ..._.omit(chargeEvent, 'id', 'createdAt', 'userId'),
+      updatedAt: new Date(),
+    },
   })
 }
 

@@ -7,7 +7,7 @@ describe('sign up and login', () => {
 
   const verifyStateAfterLogin = () => {
     cy.findByTestId('chargeEventsTable').should('exist')
-    const providers = cy.findByTestId('providers');
+    const providers = cy.findByTestId('providers')
     providers.should('exist')
     providers.find('button').should('have.length.gte', 10)
   }

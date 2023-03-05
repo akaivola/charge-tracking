@@ -48,4 +48,3 @@ async function createAndLogin(email: string) {
 }
 
 createAndLogin(process.argv[2])
-

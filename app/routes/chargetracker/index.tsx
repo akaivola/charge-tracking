@@ -4,13 +4,14 @@ import { useState } from 'react'
 import { typedjson, useTypedLoaderData } from 'remix-typedjson'
 import type {
   ChargeEvent,
-  ChargeEventRelation} from '~/models/chargeevents.server';
+  ChargeEventRelation,
+} from '~/models/chargeevents.server'
 import {
   createChargeEvent,
   deleteChargeEvent,
   getChargeEvents,
   getLastDeletedChargeEvent,
-  updateChargeEvent
+  updateChargeEvent,
 } from '~/models/chargeevents.server'
 import { requireUserId } from '~/session.server'
 import ChargeEntry from '../../components/chargetracker/ChargeEntry'
@@ -33,7 +34,7 @@ export async function loader({ request }: LoaderArgs) {
     lastDeleted: lastDeleted || null,
     initialChargeEvent: kWh
       ? ({
-          kiloWattHours: parseFloat(kWh), 
+          kiloWattHours: parseFloat(kWh),
         } as Partial<ChargeEventRelation>)
       : null,
   })
@@ -98,7 +99,6 @@ export async function action({ request }: ActionArgs) {
   return typedjson({ error: 'unknown action' })
 }
 
-
 export default function ChargeTrackerIndexPage() {
   const { chargeEvents, providers, lastDeleted, initialChargeEvent } =
     useTypedLoaderData<typeof loader>()
@@ -117,7 +117,10 @@ export default function ChargeTrackerIndexPage() {
           newEvent={() => setEvent({} as Partial<ChargeEvent>)}
         />
       </div>
-      <section data-test-id="chargeEventsTable" className="md:text-md grid select-none grid-cols-12 gap-x-6">
+      <section
+        data-test-id="chargeEventsTable"
+        className="md:text-md grid select-none grid-cols-12 gap-x-6"
+      >
         <div className="col-span-3">Date</div>
         <div className="col-span-2 text-right">kWh</div>
         <div className="col-span-2 text-right">e/ charge</div>
@@ -138,8 +141,12 @@ export default function ChargeTrackerIndexPage() {
               }}
             >
               <div className="col-span-3">{format(date)}</div>
-              <div className="col-span-2 text-right">{_.round(kiloWattHours, 2)}</div>
-              <div className="col-span-2 text-right">{_.round(pricePerCharge, 2)}</div>
+              <div className="col-span-2 text-right">
+                {_.round(kiloWattHours, 2)}
+              </div>
+              <div className="col-span-2 text-right">
+                {_.round(pricePerCharge, 2)}
+              </div>
               <div className="col-span-2 text-right">
                 {_.round(pricePerCharge / kiloWattHours, 2)}
               </div>

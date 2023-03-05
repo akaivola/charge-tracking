@@ -41,7 +41,7 @@ export async function createDefaultProviders(userId: User['id'] | number) {
   return prisma.provider.createMany({
     data: defaultProviders.map((provider) => ({
       ...provider,
-      userId
+      userId,
     })),
   })
 }

@@ -17,7 +17,9 @@ export interface ChargeEntryProps {
 export default function ChargeEntry(props: ChargeEntryProps) {
   const { providers, event, lastDeleted } = props
   const mode = event?.id ? 'update' : 'insert'
-  const foundProvider = event?.providerId ? providers.find(p => p.id === event.providerId) : _.first(providers)
+  const foundProvider = event?.providerId
+    ? providers.find((p) => p.id === event.providerId)
+    : _.first(providers)
 
   const [date, setDate] = useState(format(event?.date ?? new Date()))
   const [kiloWattHours, setKiloWattHours] = useState(event?.kiloWattHours ?? 0)
@@ -30,6 +32,8 @@ export default function ChargeEntry(props: ChargeEntryProps) {
     setPrice(event?.pricePerCharge ?? 0)
     setProvider(provider)
   }, [event, provider])
+
+  const ref = React.createRef<HTMLDivElement>()
 
   return (
     <Form method="post">
@@ -62,7 +66,10 @@ export default function ChargeEntry(props: ChargeEntryProps) {
               />
             </div>
           </div>
-          <div className="grid justify-self-center">
+          <div
+            className="grid justify-self-center"
+            data-test-id="kiloWattHours"
+          >
             <div className="mr-2 grid grid-cols-2">
               <AdjustButton
                 value={1}
@@ -102,7 +109,10 @@ export default function ChargeEntry(props: ChargeEntryProps) {
               />
             </div>
           </div>
-          <div className="grid justify-self-center">
+          <div
+            className="grid justify-self-center"
+            data-test-id="pricePerCharge"
+          >
             <div className="grid grid-cols-2">
               <AdjustButton value={1} getter={price} setter={setPrice} />
               <AdjustButton value={0.1} getter={price} setter={setPrice} />
@@ -127,8 +137,12 @@ export default function ChargeEntry(props: ChargeEntryProps) {
             </div>
           </div>
         </div>
-        <div className="col-span-2 col-start-2 row-start-2 my-4 grid">
-          <div className="dropdown-down dropdown justify-self-center" data-test-id="providers">
+        <div
+          ref={ref}
+          className="col-span-2 col-start-2 row-start-2 my-4 grid"
+          data-test-id="providers"
+        >
+          <div className="dropdown-down dropdown justify-self-center">
             <input
               type="hidden"
               value={provider?.id}
@@ -146,11 +160,11 @@ export default function ChargeEntry(props: ChargeEntryProps) {
               className="dropdown-content menu w-52 rounded bg-base-100 p-2 shadow"
             >
               {providers.map((p) => (
-                <li key={p.name} className="rounded">
+                <li key={p.name} className="rounded" onClick={() => (document.activeElement as HTMLElement)?.blur()}>
                   <button
                     className="touch-none"
                     onClick={(e) => {
-                      e.preventDefault()
+                      e.preventDefault();
                       return setProvider(p)
                     }}
                   >
@@ -163,6 +177,7 @@ export default function ChargeEntry(props: ChargeEntryProps) {
         </div>
         <input
           type="button"
+          data-test-id="clearfields"
           defaultValue="Clear fields"
           onClick={(e) => {
             e.preventDefault()
@@ -192,7 +207,7 @@ export default function ChargeEntry(props: ChargeEntryProps) {
             name="_action"
             className="btn-accent btn col-span-2 col-start-3 row-start-4 my-4 touch-none justify-self-center rounded"
             readOnly
-            value={'delete'}
+            value="delete"
           />
         )}
       </div>
