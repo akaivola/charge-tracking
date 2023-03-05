@@ -5,18 +5,18 @@ import { prisma } from '~/db.server'
 import type { User } from '~/models/user.server'
 export type { Provider } from '@prisma/client'
 
-// const defaultProviders = [
-//   'abc',
-//   'virta',
-//   'recharge',
-//   'office',
-//   'k-lataus',
-//   'lidl',
-//   'ikea',
-//   'home',
-//   'plugit',
-//   'other',
-// ]
+const defaultProviders = [
+  'abc',
+  'virta',
+  'recharge',
+  'office',
+  'k-lataus',
+  'lidl',
+  'ikea',
+  'home',
+  'plugit',
+  'other',
+].map((name) => ({ name }))
 
 export type ProviderCount = Omit<Provider, 'userId'> & { count: number }
 
@@ -35,6 +35,15 @@ export async function getProviderCounts(userId: User['id'] | number) {
     where p."userId" = ${userId}
     group by p.id, p.name order by 2 desc`
   )
+}
+
+export async function createDefaultProviders(userId: User['id'] | number) {
+  return prisma.provider.createMany({
+    data: defaultProviders.map((provider) => ({
+      ...provider,
+      userId
+    })),
+  })
 }
 
 export async function addProvider(name: string, userId: User['id'] | number) {
