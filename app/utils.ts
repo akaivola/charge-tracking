@@ -84,7 +84,7 @@ export function formatDay(day: Dayjs | Date | undefined) {
   return dayjs.utc(day).format('DD.MM.YYYY')
 }
 
-export function format(date: Date) {
+export function format(date: Date | Dayjs) {
   return dayjs.utc(date).format('DD.MM.YYYY')
 }
 

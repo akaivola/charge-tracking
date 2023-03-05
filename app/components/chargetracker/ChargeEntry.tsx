@@ -128,7 +128,7 @@ export default function ChargeEntry(props: ChargeEntryProps) {
           </div>
         </div>
         <div className="col-span-2 col-start-2 row-start-2 my-4 grid">
-          <div className="dropdown-down dropdown justify-self-center">
+          <div className="dropdown-down dropdown justify-self-center" data-test-id="providers">
             <input
               type="hidden"
               value={provider?.id}
