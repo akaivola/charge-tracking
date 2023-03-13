@@ -1,25 +1,27 @@
 import { Form } from '@remix-run/react'
 import _ from 'lodash'
 import React, { useState } from 'react'
-import type { ChargeEvent } from '../../models/chargeevents.server'
-import type { ProviderCount } from '../../models/providers.server'
+import type { ChargeEventRelation } from '../../models/chargeevents.server'
+import type { Provider, ProviderCount } from '../../models/providers.server'
 import { format } from '../../utils'
 import AdjustButton from '../AdjustButton'
 import DateAdjustButton from '../DateAdjustButton'
 
 export interface ChargeEntryProps {
   newEvent: () => void
-  providers: ProviderCount[]
-  event?: Partial<ChargeEvent>
-  lastDeleted: ChargeEvent | null
+  providers: Provider[]
+  event?: Partial<ChargeEventRelation>
+  lastDeleted: ChargeEventRelation | null
 }
 
 export default function ChargeEntry(props: ChargeEntryProps) {
   const { providers, event, lastDeleted } = props
   const mode = event?.id ? 'update' : 'insert'
-  const foundProvider = event?.providerId
-    ? providers.find((p) => p.id === event.providerId)
-    : _.first(providers)
+  const foundProvider = React.useMemo(() => {
+    return event?.providerId
+      ? providers.find((p) => p.id === event.providerId)
+      : _.first(providers)
+  }, [event, providers])
 
   const [date, setDate] = useState(format(event?.date ?? new Date()))
   const [kiloWattHours, setKiloWattHours] = useState(event?.kiloWattHours ?? 0)
@@ -30,10 +32,8 @@ export default function ChargeEntry(props: ChargeEntryProps) {
     setDate(format(event?.date ?? new Date()))
     setKiloWattHours(event?.kiloWattHours ?? 0)
     setPrice(event?.pricePerCharge ?? 0)
-    setProvider(provider)
-  }, [event, provider])
-
-  const ref = React.createRef<HTMLDivElement>()
+    setProvider(event?.provider ?? foundProvider)
+  }, [event])
 
   return (
     <Form method="post">
@@ -138,7 +138,6 @@ export default function ChargeEntry(props: ChargeEntryProps) {
           </div>
         </div>
         <div
-          ref={ref}
           className="col-span-2 col-start-2 row-start-2 my-4 grid"
           data-test-id="providers"
         >
@@ -160,11 +159,17 @@ export default function ChargeEntry(props: ChargeEntryProps) {
               className="dropdown-content menu w-52 rounded bg-base-100 p-2 shadow"
             >
               {providers.map((p) => (
-                <li key={p.name} className="rounded" onClick={() => (document.activeElement as HTMLElement)?.blur()}>
+                <li
+                  key={p.name}
+                  className="rounded"
+                  onClick={(e) => {
+                    ;(document.activeElement as HTMLElement)?.blur()
+                  }}
+                >
                   <button
                     className="touch-none"
                     onClick={(e) => {
-                      e.preventDefault();
+                      e.preventDefault()
                       return setProvider(p)
                     }}
                   >

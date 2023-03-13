@@ -26,7 +26,13 @@ export async function loader({ request }: LoaderArgs) {
 
   const userId = await requireUserId(request)
   const chargeEvents = await getChargeEvents({ userId })
-  const providers = await getProviderCounts(userId)
+  const providers = await getProviderCounts(userId).then((p) =>
+    p.map(({ id, name }) => ({
+      id,
+      name,
+    }))
+  )
+
   const lastDeleted = await getLastDeletedChargeEvent({ userId })
   return typedjson({
     chargeEvents,
@@ -102,9 +108,7 @@ export async function action({ request }: ActionArgs) {
 export default function ChargeTrackerIndexPage() {
   const { chargeEvents, providers, lastDeleted, initialChargeEvent } =
     useTypedLoaderData<typeof loader>()
-  const [event, setEvent] = useState(
-    (initialChargeEvent ?? {}) as Partial<ChargeEvent>
-  )
+  const [event, setEvent] = useState(initialChargeEvent ?? {})
 
   return (
     <section>
@@ -114,7 +118,7 @@ export default function ChargeTrackerIndexPage() {
           event={event}
           providers={providers}
           lastDeleted={lastDeleted}
-          newEvent={() => setEvent({} as Partial<ChargeEvent>)}
+          newEvent={() => setEvent({} as Partial<ChargeEventRelation>)}
         />
       </div>
       <section

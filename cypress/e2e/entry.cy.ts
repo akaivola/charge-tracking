@@ -65,6 +65,6 @@ describe('charge entries', () => {
     providersInput().find('button ').contains('lidl').click()
     providersInput().find('button').should('not.be.visible')
 
-    // cy.get("input[type='submit'][value='insert']").click()
+    cy.get("input[type='submit'][value='insert']").click()
   })
 })
