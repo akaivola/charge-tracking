@@ -2,10 +2,7 @@ import type { ActionArgs, LoaderArgs } from '@remix-run/node'
 import _ from 'lodash'
 import { useState } from 'react'
 import { typedjson, useTypedLoaderData } from 'remix-typedjson'
-import type {
-  ChargeEvent,
-  ChargeEventRelation,
-} from '~/models/chargeevents.server'
+import type { ChargeEventRelation } from '~/models/chargeevents.server'
 import {
   createChargeEvent,
   deleteChargeEvent,
@@ -27,9 +24,10 @@ export async function loader({ request }: LoaderArgs) {
   const userId = await requireUserId(request)
   const chargeEvents = await getChargeEvents({ userId })
   const providers = await getProviderCounts(userId).then((p) =>
-    p.map(({ id, name }) => ({
+    p.map(({ id, name, userId }) => ({
       id,
       name,
+      userId,
     }))
   )
 
@@ -136,7 +134,7 @@ export default function ChargeTrackerIndexPage() {
           return (
             <div
               key={id.toString()}
-              className={`col-span-full grid cursor-pointer grid-cols-12 gap-x-6 py-2 text-xs md:text-base ${
+              className={`table-item col-span-full grid cursor-pointer grid-cols-12 gap-x-6 py-2 text-xs md:text-base ${
                 isSelected ? 'text-warning' : ''
               }`}
               onClick={(e) => {

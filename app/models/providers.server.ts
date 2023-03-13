@@ -18,7 +18,7 @@ const defaultProviders = [
   'other',
 ].map((name) => ({ name }))
 
-export type ProviderCount = Omit<Provider, 'userId'> & { count: number }
+export type ProviderCount = Provider & { count: number }
 
 export async function getProviders(userId: User['id'] | number) {
   return prisma.provider.findMany({
@@ -29,7 +29,7 @@ export async function getProviders(userId: User['id'] | number) {
 
 export async function getProviderCounts(userId: User['id'] | number) {
   return prisma.$queryRaw<ProviderCount[]>(
-    Prisma.sql`select p.id, p.name, count(p.name) as count from "Provider" p 
+    Prisma.sql`select p.id, p.name, p."userId", count(p.name) as count from "Provider" p 
     left join "ChargeEvent" c on c."providerId" = p.id and c."userId" = ${userId} 
     and c."deletedAt" is null
     where p."userId" = ${userId}

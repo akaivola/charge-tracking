@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import dayjs from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 import { format } from '../../app/utils'
 
 describe('charge entries', () => {
@@ -66,5 +66,18 @@ describe('charge entries', () => {
     providersInput().find('button').should('not.be.visible')
 
     cy.get("input[type='submit'][value='insert']").click()
+
+    cy.findByTestId('chargeEventsTable').within(() => {
+      cy.findByText('lidl').should('be.visible')
+      cy.findByText('10').should('be.visible')
+      cy.findByText('2').should('be.visible')
+      cy.findByText('0.2').should('be.visible')
+      cy.findByText(format(dayjs().add(1, 'day'))).should('be.visible')
+
+      cy.findByText('lidl').click()
+    })
+
+    cy.findByDisplayValue('update').should('be.visible')
+    cy.findByDisplayValue('delete').should('be.visible')
   })
 })
