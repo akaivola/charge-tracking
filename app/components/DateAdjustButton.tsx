@@ -3,7 +3,7 @@ import { formatDay, parse } from '../utils'
 
 export default function DateAdjustButton(props: {
   value: number
-  getter: string
+  getter: string | Date
   setter: (newValue: string | undefined) => unknown
 }) {
   const oldDate = parse(props.getter)
@@ -15,9 +15,10 @@ export default function DateAdjustButton(props: {
 
   return (
     <input
+      data-test-id="date-adjust-button"
       type="button"
       onClick={onClick}
-      className="btn btn-primary btn-sm m-1 touch-none rounded p-1"
+      className="btn-primary btn-sm btn m-1 touch-none rounded p-1"
       value={props.value}
     />
   )

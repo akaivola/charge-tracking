@@ -1,120 +1,135 @@
-import type { ChargeEvent, Provider, User } from '@prisma/client'
-import _ from 'lodash'
+import type {
+  ChargeEvent as PrismaChargeEvent,
+  Provider,
+  User,
+} from '@prisma/client'
+import _, { compact } from 'lodash'
 import invariant from 'tiny-invariant'
+import type { Overwrite } from 'utility-types'
 
 import { prisma } from '~/db.server'
-import type { Optional } from '../utils'
-import { format } from '../utils'
 
-export type { ChargeEvent } from '@prisma/client'
+export type ChargeEvent = Overwrite<
+  PrismaChargeEvent,
+  {
+    kiloWattHours: number
+    pricePerCharge: number
+  }
+>
 
-const chargeEventSelect = {
-  id: true,
-  date: true,
-  kiloWattHours: true,
-  pricePerCharge: true,
-  userId: true,
-  providerFK: {
-    select: {
-      name: true,
-    },
-  },
+type ProviderAndUser = {
+  provider: Provider
+  user: User
 }
 
-type FK = { providerFK: Provider }
-type ChargeEventSelect = Exclude<keyof typeof chargeEventSelect, keyof FK>
-export type SerializableChargeEvent = Pick<ChargeEvent, ChargeEventSelect> & FK
+type PrismaChargeEventRelation = PrismaChargeEvent & ProviderAndUser
 
-export function toSerializable(event: SerializableChargeEvent) {
+export type ChargeEventRelation = ChargeEvent & ProviderAndUser
+
+export type ChargeEventUpdate = Omit<ChargeEvent, 'updatedAt' | 'createdAt'>
+export type ChargeEventDelete = Pick<ChargeEventRelation, 'id' | 'userId'>
+
+const convertDecimalToNumber = (
+  event: PrismaChargeEventRelation | null
+): ChargeEventRelation | null => {
+  if (!event) return null
   return {
     ...event,
-    id: event.id,
-    date: format(event.date),
     kiloWattHours: event.kiloWattHours.toNumber(),
     pricePerCharge: event.pricePerCharge.toNumber(),
-    providerFK: event.providerFK,
   }
 }
+
+const convertDecimalsToNumbers = (
+  events: PrismaChargeEventRelation[]
+): ChargeEventRelation[] => compact(events.map(convertDecimalToNumber))
 
 export async function getChargeEvents({
   userId,
 }: {
   userId: User['id']
-}): Promise<SerializableChargeEvent[]> {
-  return prisma.chargeEvent.findMany({
-    select: chargeEventSelect,
-    where: {
-      userId,
-      deletedAt: {
-        equals: null,
+}): Promise<ChargeEventRelation[]> {
+  return prisma.chargeEvent
+    .findMany({
+      include: {
+        provider: true,
+        user: true,
       },
-    },
-    orderBy: [
-      {
-        date: 'desc',
+      where: {
+        userId,
+        deletedAt: {
+          equals: null,
+        },
       },
-      { id: 'desc' },
-    ],
-  })
+      orderBy: [
+        {
+          date: 'desc',
+        },
+        { id: 'desc' },
+      ],
+    })
+    .then(convertDecimalsToNumbers)
 }
 
-export function getLastDeletedChargeEvent({
+export async function getLastDeletedChargeEvent({
   userId,
 }: {
   userId: User['id']
-}): Promise<SerializableChargeEvent | null> {
-  return prisma.chargeEvent.findFirst({
-    select: chargeEventSelect,
-    where: {
-      userId,
-      deletedAt: {
-        not: null,
+}): Promise<ChargeEventRelation | null> {
+  return await prisma.chargeEvent
+    .findFirst({
+      include: {
+        provider: true,
+        user: true,
       },
-    },
-    orderBy: {
-      deletedAt: 'desc',
-    },
-  })
+      where: {
+        userId,
+        deletedAt: {
+          not: null,
+        },
+      },
+      orderBy: {
+        deletedAt: 'desc',
+      },
+    }).then(convertDecimalToNumber)
 }
 
 export function createChargeEvent(
   chargeEvent: Omit<ChargeEvent, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>
 ) {
+  invariant(chargeEvent.providerId, 'providerId cannot be missing')
   return prisma.chargeEvent.create({
-    data: chargeEvent,
+    data: {
+      ..._.omit(chargeEvent, 'id', 'createdAt', 'updatedAt', 'deletedAt'),
+      deletedAt: null,
+    },
   })
 }
 
-export async function updateChargeEvent(
-  chargeEvent: Optional<
-    Omit<ChargeEvent, 'createdAt' | 'updatedAt'>,
-    'deletedAt'
-  >
-) {
+export async function updateChargeEvent(chargeEvent: ChargeEventUpdate) {
   // updatedAt could be used as an optimistic lock
+  invariant(chargeEvent.id, 'id cannot be missing')
   invariant(chargeEvent.userId, 'userId cannot be missing')
+  invariant(chargeEvent.providerId, 'providerId cannot be missing')
   return prisma.chargeEvent.updateMany({
     where: {
       id: chargeEvent.id,
-      user: {
-        id: chargeEvent.userId,
-      },
+      userId: chargeEvent.userId,
     },
-    data: { ..._.omit(chargeEvent, 'createdAt'), updatedAt: new Date() },
+    data: {
+      ..._.omit(chargeEvent, 'id', 'createdAt', 'userId'),
+      updatedAt: new Date(),
+    },
   })
 }
 
-export async function deleteChargeEvent(
-  chargeEvent: Pick<ChargeEvent, 'id' | 'userId'>
-) {
+export async function deleteChargeEvent(chargeEvent: ChargeEventDelete) {
   invariant(chargeEvent.id, 'id cannot be missing')
   invariant(chargeEvent.userId, 'userId cannot be missing')
   return prisma.chargeEvent.updateMany({
     where: {
       id: chargeEvent.id,
-      user: {
-        id: chargeEvent.userId,
-      },
+      userId: chargeEvent.userId,
     },
     data: {
       updatedAt: new Date(),

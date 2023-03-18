@@ -7,6 +7,7 @@ import { createUserSession, getUserId } from '~/session.server'
 
 import { createUser, getUserByEmail } from '~/models/user.server'
 import { safeRedirect, validateEmail } from '~/utils'
+import { addProvider, createDefaultProviders } from '../models/providers.server'
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request)
@@ -55,6 +56,7 @@ export async function action({ request }: ActionArgs) {
   }
 
   const user = await createUser(email, password)
+  await createDefaultProviders(user.id)
 
   return createUserSession({
     request,

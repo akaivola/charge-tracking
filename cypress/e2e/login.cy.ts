@@ -1,11 +1,18 @@
 import { faker } from '@faker-js/faker'
 
-describe('smoke tests', () => {
+describe('sign up and login', () => {
   afterEach(() => {
     cy.cleanupUser()
   })
 
-  it('should allow you to register and login', () => {
+  const verifyStateAfterLogin = () => {
+    cy.findByTestId('chargeEventsTable').should('exist')
+    const providers = cy.findByTestId('providers')
+    providers.should('exist')
+    providers.find('button').should('have.length.gte', 10)
+  }
+
+  it('should allow to register and login', () => {
     const loginForm = {
       email: `${faker.internet.userName()}@example.com`,
       password: faker.internet.password(),
@@ -18,5 +25,13 @@ describe('smoke tests', () => {
     cy.findByRole('textbox', { name: /email/i }).type(loginForm.email)
     cy.findByLabelText(/password/i).type(loginForm.password)
     cy.findByRole('button', { name: /create account/i }).click()
+    verifyStateAfterLogin()
+  })
+
+  it('should allow to login', () => {
+    cy.login()
+    cy.visitAndCheck('/')
+    cy.findByTestId('chargeEventsTable').should('exist')
+    verifyStateAfterLogin()
   })
 })

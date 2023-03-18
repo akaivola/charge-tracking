@@ -12,9 +12,10 @@ export default function AdjustButton(props: {
   }
   return (
     <input
+      data-test-id="adjust-button"
       type="button"
       onClick={onClick}
-      className="btn btn-primary btn-sm m-1 touch-none rounded p-1"
+      className="btn-primary btn-sm btn m-1 touch-none rounded p-1"
       value={props.value}
     />
   )

@@ -8,6 +8,7 @@ import { installGlobals } from '@remix-run/node'
 import { parse } from 'cookie'
 
 import { createUser } from '~/models/user.server'
+import { createDefaultProviders } from '~/models/providers.server'
 import { createUserSession } from '~/session.server'
 
 installGlobals()
@@ -21,6 +22,7 @@ async function createAndLogin(email: string) {
   }
 
   const user = await createUser(email, 'myreallystrongpassword')
+  await createDefaultProviders(user.id)
 
   const response = await createUserSession({
     request: new Request('test://test'),

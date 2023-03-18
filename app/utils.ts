@@ -80,18 +80,18 @@ export function validateEmail(email: unknown): email is string {
   return typeof email === 'string' && email.length > 3 && email.includes('@')
 }
 
-export function formatDay(day: Dayjs | undefined) {
-  return day?.format('DD.MM.YYYY')
+export function formatDay(day: Dayjs | Date | undefined) {
+  return dayjs.utc(day).format('DD.MM.YYYY')
 }
 
-export function format(date: Date) {
+export function format(date: Date | Dayjs) {
   return dayjs.utc(date).format('DD.MM.YYYY')
 }
 
-export function parse(dateStr: string | undefined) {
-  return dateStr ? dayjs.utc(dateStr, 'DD.MM.YYYY') : undefined
+export function parse(date: string | Date | undefined) {
+  return dayjs.utc(date, 'DD.MM.YYYY')
 }
 
-export function formatShort(day: Dayjs | undefined) {
-  return day?.format('MMM YYYY')
+export function formatShort(date: Dayjs | Date | undefined) {
+  return dayjs.utc(date).format('MMM YYYY')
 }

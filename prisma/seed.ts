@@ -1,9 +1,11 @@
+import type { Provider } from '@prisma/client'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import fs from 'fs'
+import { keyBy } from 'lodash'
 import readline from 'readline'
 import { logger } from '../app/logger.server'
-import { initializeProviders } from '../app/models/providers.server'
+import { addProvider } from '../app/models/providers.server'
 
 const prisma = new PrismaClient({
   errorFormat: 'pretty',
@@ -13,6 +15,35 @@ const prisma = new PrismaClient({
     { level: 'error', emit: 'event' },
   ],
 })
+
+type ProviderWithoutUser = Omit<Provider, 'userId'>
+let providerCache: {
+  [userId: string]: { [name: string]: ProviderWithoutUser }
+} = {}
+
+async function fetchOrAddProvider(
+  name: string,
+  userId: bigint
+): Promise<ProviderWithoutUser> {
+  const providers = providerCache[userId.toString()]
+  logger.info(JSON.stringify(providerCache))
+  const provider = providers ? providers[name] : undefined
+
+  if (provider) return provider
+  else {
+    const newProvider = await addProvider(name, userId)
+    const newProviders = [
+      ...((providers && Object.values(providers)) ?? []),
+      newProvider,
+    ]
+    logger.info(JSON.stringify(newProviders), keyBy(newProviders, 'name'))
+    if (newProviders.length === 0)
+      throw new Error(`Failed to add provider ${name} for user ${userId}`)
+    providerCache[userId.toString()] = keyBy(newProviders, 'name')
+    logger.info(JSON.stringify(providerCache))
+    return newProvider
+  }
+}
 
 prisma.$on('warn', (e) => {
   logger.warn(e)
@@ -37,6 +68,7 @@ async function seed() {
   const hashedPassword = await bcrypt.hash('dev', 10)
 
   const user = await prisma.user.create({
+    select: { id: true },
     data: {
       email,
       password: {
@@ -48,42 +80,42 @@ async function seed() {
   })
 
   await prisma.provider.deleteMany()
-  await initializeProviders()
-
   await prisma.chargeEvent.deleteMany()
-  var stream = fs.createReadStream('Charge Times - Log.csv')
-  var reader = readline.createInterface({ input: stream })
-  const providersMap: { [key: string]: string } = {
-    abc: 'abc',
-    v: 'virta',
-    r: 'recharge',
-    t: 'office',
-    k: 'k-lataus',
-    l: 'lidl',
-    i: 'ikea',
-    o: 'other',
-  }
-  reader.on('line', async (row) => {
-    //eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [dateRaw, kiloWattHours, pricePerCharge, _, providerRaw] =
-      row.split(',')
-    logger.info(row)
-    const [d, m, y] = dateRaw.split('.')
-    const provider = providersMap[providerRaw] || providerRaw
 
-    if (!provider)
-      throw Error(`Unable to map ${providerRaw} from ${providersMap}`)
+  var input = fs.createReadStream('ChargeEvent.csv')
+  var reader = readline.createInterface({ input })
+
+  for await (const line of reader) {
+    const [
+      id,
+      date,
+      kiloWattHours,
+      pricePerCharge,
+      provider,
+      createdAt,
+      updatedAt,
+      _userId,
+      deletedAt,
+    ] = line.split(';')
+
+    if (id === 'id') continue // skip header
+
+    const [y, m, d] = date.split('-')
+    const { id: providerId } = await fetchOrAddProvider(provider, user.id)
 
     await prisma.chargeEvent.create({
       data: {
         kiloWattHours: Number(kiloWattHours),
-        provider,
+        providerId,
         date: new Date(`${y}-${m}-${d}`),
         userId: user.id,
         pricePerCharge: Number(pricePerCharge),
+        createdAt: new Date(createdAt),
+        updatedAt: new Date(updatedAt),
+        deletedAt: deletedAt ? new Date(deletedAt) : null,
       },
     })
-  })
+  }
 
   logger.info(`Database has been seeded. 🌱`)
 }
