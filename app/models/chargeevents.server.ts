@@ -71,12 +71,12 @@ export async function getChargeEvents({
     .then(convertDecimalsToNumbers)
 }
 
-export function getLastDeletedChargeEvent({
+export async function getLastDeletedChargeEvent({
   userId,
 }: {
   userId: User['id']
 }): Promise<ChargeEventRelation | null> {
-  return prisma.chargeEvent
+  return await prisma.chargeEvent
     .findFirst({
       include: {
         provider: true,
@@ -91,8 +91,7 @@ export function getLastDeletedChargeEvent({
       orderBy: {
         deletedAt: 'desc',
       },
-    })
-    .then(convertDecimalToNumber)
+    }).then(convertDecimalToNumber)
 }
 
 export function createChargeEvent(
@@ -116,7 +115,6 @@ export async function updateChargeEvent(chargeEvent: ChargeEventUpdate) {
     where: {
       id: chargeEvent.id,
       userId: chargeEvent.userId,
-      providerId: chargeEvent.providerId,
     },
     data: {
       ..._.omit(chargeEvent, 'id', 'createdAt', 'userId'),

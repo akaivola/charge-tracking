@@ -93,7 +93,12 @@ export async function action({ request }: ActionArgs) {
     const lastDeleted = await getLastDeletedChargeEvent({ userId })
     if (lastDeleted) {
       const updated = updateChargeEvent({
-        ...lastDeleted,
+        id: lastDeleted.id,
+        date: lastDeleted.date,
+        kiloWattHours: lastDeleted.kiloWattHours,
+        pricePerCharge: lastDeleted.pricePerCharge,
+        userId: lastDeleted.userId,
+        providerId: lastDeleted.providerId,
         deletedAt: null,
       })
       return typedjson({ updated })

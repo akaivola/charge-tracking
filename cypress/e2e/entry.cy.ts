@@ -1,5 +1,4 @@
-import { faker } from '@faker-js/faker'
-import dayjs, { Dayjs } from 'dayjs'
+import dayjs from 'dayjs'
 import { format } from '../../app/utils'
 
 describe('charge entries', () => {
